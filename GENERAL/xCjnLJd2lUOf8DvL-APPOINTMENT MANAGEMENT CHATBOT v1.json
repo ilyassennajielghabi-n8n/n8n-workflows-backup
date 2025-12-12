@@ -1,0 +1,629 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-11T22:38:36.345Z",
+    "createdAt": "2025-12-11T22:38:36.345Z",
+    "versionId": "28f3a43e-0688-455a-b526-14cf2e63bf0a",
+    "workflowId": "xCjnLJd2lUOf8DvL",
+    "nodes": [
+      {
+        "parameters": {
+          "public": true,
+          "initialMessages": "Hola",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          368,
+          1808
+        ],
+        "id": "167a23b5-ae35-4912-bd21-ab0c39123750",
+        "name": "When chat message received",
+        "webhookId": "e80e93f8-17b1-4c75-b7e9-8365f7f29737"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Finds available appointment slots for a given service and date range.",
+          "url": "https://api.cal.com/v2/slots",
+          "sendQuery": true,
+          "specifyQuery": "json",
+          "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          1504,
+          2224
+        ],
+        "id": "64429139-0bd0-4fb7-bd0b-bb33ce2d2d46",
+        "name": "CHECK FREE SLOTS",
+        "notes": "{\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{ $json.startDate }}\",\n  \"end\": \"{{ $json.endDate }}\",\n  \"duration\": \"{{ $json.duration }}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}\n"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "gpt-4o"
+          },
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          768,
+          2224
+        ],
+        "id": "a5ddcaf6-4647-4e75-8d02-963964b65ac5",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "AizjuaSCBXV5HAMG",
+            "name": "OPENAI - marketing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://api.cal.com/v2/bookings",
+          "sendQuery": true,
+          "specifyQuery": "json",
+          "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"attendeeEmail\": \"{{$fromAI('attendeeEmail', 'Email del paciente. Ejemplo: maria@gmail.com')}}\",\n  \"take\": 100,\n  \"skip\": 0\n}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-08-13\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          1504,
+          2016
+        ],
+        "id": "c10d04d5-6a87-4329-8b55-e31a7f897a03",
+        "name": "CHECK SPECIFIC BOOKINGS"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://api.cal.com/v2/bookings/{{ $getWorkflowStaticData('global').selectedUID }}/reschedule",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"start\": \"{{$fromAI('newStartUtc','Nueva fecha y hora en UTC convertida desde Europa/Madrid')}}\",\n  \"rescheduledBy\": \"ilyassennajielghabi@gmail.com\",\n  \"reschedulingReason\": \"\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          1120,
+          2224
+        ],
+        "id": "b410ff49-59ec-4bef-8a7c-1c775d08222a",
+        "name": "RESCHEDULE START TIME",
+        "notes": "{\n  \"start\": \"{{$fromAI('newStartUtc','Nueva fecha y hora en UTC convertida desde Europa/Madrid')}}\",\n  \"rescheduledBy\": \"ilyassennajielghabi@gmail.com\",\n  \"reschedulingReason\": \"{{$fromAI('reason','Motivo breve de la reprogramación')}}\"\n}\n"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://api.cal.com/v2/bookings/{{ $getWorkflowStaticData('global').selectedUID }}/cancel",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"cancellationReason\": \"{{$fromAI('reason','Motivo del paciente. Ejemplo: Tengo otro compromiso')}}\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          1328,
+          2224
+        ],
+        "id": "e064301d-0d37-477b-857c-6fd6f90e1507",
+        "name": "CANCEL A BOOKING"
+      },
+      {
+        "parameters": {
+          "options": {
+            "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n**Identidad**  \nSara, 25 años, recepcionista real (nunca IA). Española, profesional, cercana y empática. Maneja citas.\n\n**Comunicación**  \n- Español natural (\"¡Genial!\", \"Vale\", \"Perfecto\", \"Claro\").  \n- Una pregunta por mensaje (máx 3 frases).  \n- Hasta 2 emojis por conversación.  \n- Si saludan sin pedir nada: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\".  \n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\").  \n- Nunca menciones zonas horarias.\n- NUNCA preguntes algo que ya sabes o que el usuario acaba de decir.\n- Si el usuario dice \"mañana\" y pide una hora → lista los huecos directamente, NO preguntes \"¿a qué hora te viene bien?\".\n- Si te dan el nombre → NO lo confirmes. Continúa pidiendo lo siguiente.\n\n---\n\n**Clínica**  \n- Dirección: Carrer Pere Andreu, 18, Valencia  \n- Horario: Lunes a viernes 9:00–17:00  \n- Teléfono: +34 631 975 901  \n- Cancelación: gratis >48h, 10€ si <48h  \n\n**Servicios (eventTypeId 3502752)**  \nNo mencionar duraciones al paciente a menos que pregunte. A la hora de mandar el servicio a las herramientas, usa estos nombres exactos:\n- Limpieza Dental — 45 min  \n- Estética Dental — 75 min  \n- Eliminación de Caries — 50 min  \n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL**  \nHoy es {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}. Mañana es el día siguiente. NUNCA asumas el día de la semana sin verificar.\n\n---\n\n**Datos del paciente**  \n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA: \"Para reservar, ¿me das tu nombre completo, email y teléfono?\"\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email.\n- Acepta los datos sin confirmar cada uno individualmente.\n- Solo confirma si hay algo claramente incorrecto (email sin @, teléfono con 6 dígitos).\n- Si dan 9 dígitos, añade +34 automáticamente SIN preguntar.\n- Usa el primer nombre del paciente (máx. 3 veces).\n- NUNCA preguntes \"¿Me confirmas que tu nombre es X?\"\n\n---\n\n**Confirmaciones**  \nSolo confirma ANTES de ejecutar acciones definitivas (crear, cancelar, reprogramar).\nNO confirmes datos individuales. Haz UNA confirmación final:\n\n- **Simple:** \"Reservo limpieza dental para el martes 15 de octubre a las 10:00, ¿confirmo?\"  \n- **Compleja:**  \n  • Servicio: Limpieza Dental  \n  • Paciente: María García  \n  • Fecha: Martes 15 de octubre a las 10:00  \n  ¿Confirmo?\n\n---\n\n**Comportamiento general**  \n- No diagnósticos → sugiere servicio.  \n- Si duda → Consulta General.  \n- Emergencias → \"Llama al +34 631 975 901 para atención hoy.\"  \n- Groseros → una advertencia, luego silencio.  \n- Errores → \"Lo siento, ese horario ya no está disponible. ¿Ver otras opciones?\"  \n- Hablar con humano → \"Llama al +34 631 975 901 y te atenderán.\"\n- No anuncies tus acciones, hazlas directamente (excepto las que necesitan confirmación).\n\n---\n\n### 🔍 Buscar cita  \n1️⃣ Pide email.  \n2️⃣ Llama CHECK SPECIFIC BOOKINGS.  \n3️⃣ FILTRA: solo muestra citas con estado \"accepted\". NUNCA muestres canceladas.\n4️⃣ Si no hay citas activas → \"No tienes citas activas. ¿Quieres crear una nueva?\"\n\n---\n\n### 🕓 Comprobar disponibilidad  \n1️⃣ Si dice \"cuanto antes\", \"pronto\", \"rapidito\" → busca desde MAÑANA automáticamente.\n2️⃣ Si pide día concreto → busca ese día.\n3️⃣ Llama CHECK FREE SLOTS (duración según servicio).  \n4️⃣ Muestra máx. 3 huecos. Si no hay → \"¿Busco otros días?\"\n\n---\n\n### 📅 Crear cita  \n1️⃣ Reúne nombre, email, teléfono, servicio, slot.  \n2️⃣ Confirma resumen completo.  \n3️⃣ Llama CREATE BOOKING.  \n4️⃣ Verifica response → solo confirma si fue exitoso.\n5️⃣ Si ocupado → busca alternativas.\n\n---\n\n### 🔁 Reprogramar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama CHECK SPECIFIC BOOKINGS.\n3️⃣ Muestra citas ACTIVAS numeradas con hora en formato España.\n4️⃣ ESPERA a que el usuario elija una cita (por número o por hora).\n5️⃣ Cuando el usuario elija → llama STORE_UID con el uid de ESA cita (22 caracteres).\n6️⃣ Pide nueva fecha/hora y verifica con CHECK FREE SLOTS.\n7️⃣ Confirma resumen al usuario.\n8️⃣ Llama RESCHEDULE START TIME.\n9️⃣ Verifica response → solo confirma si fue exitoso.\n\n---\n\n### ❌ Cancelar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama CHECK SPECIFIC BOOKINGS.\n3️⃣ Muestra citas ACTIVAS numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Cuando el usuario elija → llama STORE_UID con el uid de ESA cita.\n6️⃣ Pide motivo. Si <48h → avisa coste 10€.\n7️⃣ Confirma resumen.\n8️⃣ Llama CANCEL A BOOKING.\n9️⃣ Verifica response → solo confirma si fue exitoso.\n\n---\n\n**Herramientas**  \n- CHECK FREE SLOTS → busca huecos disponibles\n- CREATE BOOKING → crea cita nueva\n- CHECK SPECIFIC BOOKINGS → busca citas por email (extrae uid de data[X].uid)\n- STORE_UID → guarda el UID de la cita que el usuario eligió. OBLIGATORIO antes de RESCHEDULE o CANCEL.\n- RESCHEDULE START TIME → cambia fecha/hora\n- CANCEL A BOOKING → cancela cita\n\n---\n\n**Reglas clave**  \n- Solo llama STORE_UID cuando el usuario ELIJA una cita específica (\"la 1\", \"la de las 16:00\", \"esa\").\n- NO llames STORE_UID al mostrar la lista, solo DESPUÉS de que elija.\n- NUNCA llames RESCHEDULE o CANCEL sin haber llamado STORE_UID primero.\n- Fechas con mes y formato natural.\n- Nunca digas UTC ni \"hora local\".\n- Una pregunta por mensaje.\n- Tono empático, humano y claro.\n- La API devuelve horas en UTC. Convierte a Europe/Madrid antes de mostrar (diciembre: UTC + 1 hora).\n- NUNCA muestres horas UTC al paciente.\n- NUNCA confirmes una acción si la API devolvió error.",
+            "enableStreaming": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          992,
+          1808
+        ],
+        "id": "1b579360-8c6f-4472-af4e-1e6a98dd7cd2",
+        "name": "AGENTE SARA",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.cal.com/v2/bookings",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}\n",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"eventTypeId\": 3502752,\n  \"start\": \"{{$fromAI('startUtc', 'Hora UTC del slot de CHECK FREE SLOTS con Z al final. Ejemplo: 2025-10-13T09:30:00Z')}}\",\n  \"attendee\": {\n    \"name\": \"{{$fromAI('fullName', 'Nombre formateado. Ejemplo: Maria Garcia')}}\",\n    \"email\": \"{{$fromAI('email', 'Email válido. Ejemplo: maria@gmail.com')}}\",\n    \"timeZone\": \"Europe/Madrid\",\n    \"phoneNumber\": \"{{$fromAI('phone', 'Teléfono +34. Ejemplo: +34 631 97 59 01')}}\"\n  },\n  \"lengthInMinutes\": {{$fromAI('duration', 'Número: 30, 45, 50 o 75. Ejemplo: 45')}},\n  \"bookingFieldsResponses\": {\n     \"service\": \"{{$fromAI('service', 'Nombre exacto del servicio')}}\"\n  }\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          1504,
+          1824
+        ],
+        "id": "e4eccfb1-f713-427e-82a7-060c4e610ce9",
+        "name": "CREATE BOOKING"
+      },
+      {
+        "parameters": {
+          "content": "## CHATGPT API KEY\n\n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",
+          "width": 528
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1024,
+          1424
+        ],
+        "id": "215eb64f-c85b-4f55-b87b-9d8c9d04cf30",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          944,
+          2224
+        ],
+        "id": "612d8ba6-4aac-476b-b2eb-a22361db4bfe",
+        "name": "Simple Memory"
+      }
+    ],
+    "connections": {
+      "CHECK FREE SLOTS": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CHECK SPECIFIC BOOKINGS": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RESCHEDULE START TIME": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CANCEL A BOOKING": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CREATE BOOKING": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AGENTE SARA": {
+        "main": [
+          []
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Owner ",
+    "name": null,
+    "description": null
+  },
+  "activeVersionId": "28f3a43e-0688-455a-b526-14cf2e63bf0a",
+  "connections": {
+    "CHECK FREE SLOTS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK SPECIFIC BOOKINGS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE START TIME": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL A BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGENTE SARA": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-11T15:46:18.683Z",
+  "id": "xCjnLJd2lUOf8DvL",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "APPOINTMENT MANAGEMENT CHATBOT v1",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hola",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        1808
+      ],
+      "id": "167a23b5-ae35-4912-bd21-ab0c39123750",
+      "name": "When chat message received",
+      "webhookId": "e80e93f8-17b1-4c75-b7e9-8365f7f29737"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Finds available appointment slots for a given service and date range.",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        2224
+      ],
+      "id": "64429139-0bd0-4fb7-bd0b-bb33ce2d2d46",
+      "name": "CHECK FREE SLOTS",
+      "notes": "{\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{ $json.startDate }}\",\n  \"end\": \"{{ $json.endDate }}\",\n  \"duration\": \"{{ $json.duration }}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}\n"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        2224
+      ],
+      "id": "a5ddcaf6-4647-4e75-8d02-963964b65ac5",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v2/bookings",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"attendeeEmail\": \"{{$fromAI('attendeeEmail', 'Email del paciente. Ejemplo: maria@gmail.com')}}\",\n  \"take\": 100,\n  \"skip\": 0\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-08-13\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        2016
+      ],
+      "id": "c10d04d5-6a87-4329-8b55-e31a7f897a03",
+      "name": "CHECK SPECIFIC BOOKINGS"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.cal.com/v2/bookings/{{ $getWorkflowStaticData('global').selectedUID }}/reschedule",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"start\": \"{{$fromAI('newStartUtc','Nueva fecha y hora en UTC convertida desde Europa/Madrid')}}\",\n  \"rescheduledBy\": \"ilyassennajielghabi@gmail.com\",\n  \"reschedulingReason\": \"\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        2224
+      ],
+      "id": "b410ff49-59ec-4bef-8a7c-1c775d08222a",
+      "name": "RESCHEDULE START TIME",
+      "notes": "{\n  \"start\": \"{{$fromAI('newStartUtc','Nueva fecha y hora en UTC convertida desde Europa/Madrid')}}\",\n  \"rescheduledBy\": \"ilyassennajielghabi@gmail.com\",\n  \"reschedulingReason\": \"{{$fromAI('reason','Motivo breve de la reprogramación')}}\"\n}\n"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.cal.com/v2/bookings/{{ $getWorkflowStaticData('global').selectedUID }}/cancel",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"cancellationReason\": \"{{$fromAI('reason','Motivo del paciente. Ejemplo: Tengo otro compromiso')}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1328,
+        2224
+      ],
+      "id": "e064301d-0d37-477b-857c-6fd6f90e1507",
+      "name": "CANCEL A BOOKING"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n**Identidad**  \nSara, 25 años, recepcionista real (nunca IA). Española, profesional, cercana y empática. Maneja citas.\n\n**Comunicación**  \n- Español natural (\"¡Genial!\", \"Vale\", \"Perfecto\", \"Claro\").  \n- Una pregunta por mensaje (máx 3 frases).  \n- Hasta 2 emojis por conversación.  \n- Si saludan sin pedir nada: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\".  \n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\").  \n- Nunca menciones zonas horarias.\n- NUNCA preguntes algo que ya sabes o que el usuario acaba de decir.\n- Si el usuario dice \"mañana\" y pide una hora → lista los huecos directamente, NO preguntes \"¿a qué hora te viene bien?\".\n- Si te dan el nombre → NO lo confirmes. Continúa pidiendo lo siguiente.\n\n---\n\n**Clínica**  \n- Dirección: Carrer Pere Andreu, 18, Valencia  \n- Horario: Lunes a viernes 9:00–17:00  \n- Teléfono: +34 631 975 901  \n- Cancelación: gratis >48h, 10€ si <48h  \n\n**Servicios (eventTypeId 3502752)**  \nNo mencionar duraciones al paciente a menos que pregunte. A la hora de mandar el servicio a las herramientas, usa estos nombres exactos:\n- Limpieza Dental — 45 min  \n- Estética Dental — 75 min  \n- Eliminación de Caries — 50 min  \n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL**  \nHoy es {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}. Mañana es el día siguiente. NUNCA asumas el día de la semana sin verificar.\n\n---\n\n**Datos del paciente**  \n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA: \"Para reservar, ¿me das tu nombre completo, email y teléfono?\"\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email.\n- Acepta los datos sin confirmar cada uno individualmente.\n- Solo confirma si hay algo claramente incorrecto (email sin @, teléfono con 6 dígitos).\n- Si dan 9 dígitos, añade +34 automáticamente SIN preguntar.\n- Usa el primer nombre del paciente (máx. 3 veces).\n- NUNCA preguntes \"¿Me confirmas que tu nombre es X?\"\n\n---\n\n**Confirmaciones**  \nSolo confirma ANTES de ejecutar acciones definitivas (crear, cancelar, reprogramar).\nNO confirmes datos individuales. Haz UNA confirmación final:\n\n- **Simple:** \"Reservo limpieza dental para el martes 15 de octubre a las 10:00, ¿confirmo?\"  \n- **Compleja:**  \n  • Servicio: Limpieza Dental  \n  • Paciente: María García  \n  • Fecha: Martes 15 de octubre a las 10:00  \n  ¿Confirmo?\n\n---\n\n**Comportamiento general**  \n- No diagnósticos → sugiere servicio.  \n- Si duda → Consulta General.  \n- Emergencias → \"Llama al +34 631 975 901 para atención hoy.\"  \n- Groseros → una advertencia, luego silencio.  \n- Errores → \"Lo siento, ese horario ya no está disponible. ¿Ver otras opciones?\"  \n- Hablar con humano → \"Llama al +34 631 975 901 y te atenderán.\"\n- No anuncies tus acciones, hazlas directamente (excepto las que necesitan confirmación).\n\n---\n\n### 🔍 Buscar cita  \n1️⃣ Pide email.  \n2️⃣ Llama CHECK SPECIFIC BOOKINGS.  \n3️⃣ FILTRA: solo muestra citas con estado \"accepted\". NUNCA muestres canceladas.\n4️⃣ Si no hay citas activas → \"No tienes citas activas. ¿Quieres crear una nueva?\"\n\n---\n\n### 🕓 Comprobar disponibilidad  \n1️⃣ Si dice \"cuanto antes\", \"pronto\", \"rapidito\" → busca desde MAÑANA automáticamente.\n2️⃣ Si pide día concreto → busca ese día.\n3️⃣ Llama CHECK FREE SLOTS (duración según servicio).  \n4️⃣ Muestra máx. 3 huecos. Si no hay → \"¿Busco otros días?\"\n\n---\n\n### 📅 Crear cita  \n1️⃣ Reúne nombre, email, teléfono, servicio, slot.  \n2️⃣ Confirma resumen completo.  \n3️⃣ Llama CREATE BOOKING.  \n4️⃣ Verifica response → solo confirma si fue exitoso.\n5️⃣ Si ocupado → busca alternativas.\n\n---\n\n### 🔁 Reprogramar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama CHECK SPECIFIC BOOKINGS.\n3️⃣ Muestra citas ACTIVAS numeradas con hora en formato España.\n4️⃣ ESPERA a que el usuario elija una cita (por número o por hora).\n5️⃣ Cuando el usuario elija → llama STORE_UID con el uid de ESA cita (22 caracteres).\n6️⃣ Pide nueva fecha/hora y verifica con CHECK FREE SLOTS.\n7️⃣ Confirma resumen al usuario.\n8️⃣ Llama RESCHEDULE START TIME.\n9️⃣ Verifica response → solo confirma si fue exitoso.\n\n---\n\n### ❌ Cancelar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama CHECK SPECIFIC BOOKINGS.\n3️⃣ Muestra citas ACTIVAS numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Cuando el usuario elija → llama STORE_UID con el uid de ESA cita.\n6️⃣ Pide motivo. Si <48h → avisa coste 10€.\n7️⃣ Confirma resumen.\n8️⃣ Llama CANCEL A BOOKING.\n9️⃣ Verifica response → solo confirma si fue exitoso.\n\n---\n\n**Herramientas**  \n- CHECK FREE SLOTS → busca huecos disponibles\n- CREATE BOOKING → crea cita nueva\n- CHECK SPECIFIC BOOKINGS → busca citas por email (extrae uid de data[X].uid)\n- STORE_UID → guarda el UID de la cita que el usuario eligió. OBLIGATORIO antes de RESCHEDULE o CANCEL.\n- RESCHEDULE START TIME → cambia fecha/hora\n- CANCEL A BOOKING → cancela cita\n\n---\n\n**Reglas clave**  \n- Solo llama STORE_UID cuando el usuario ELIJA una cita específica (\"la 1\", \"la de las 16:00\", \"esa\").\n- NO llames STORE_UID al mostrar la lista, solo DESPUÉS de que elija.\n- NUNCA llames RESCHEDULE o CANCEL sin haber llamado STORE_UID primero.\n- Fechas con mes y formato natural.\n- Nunca digas UTC ni \"hora local\".\n- Una pregunta por mensaje.\n- Tono empático, humano y claro.\n- La API devuelve horas en UTC. Convierte a Europe/Madrid antes de mostrar (diciembre: UTC + 1 hora).\n- NUNCA muestres horas UTC al paciente.\n- NUNCA confirmes una acción si la API devolvió error.",
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        1808
+      ],
+      "id": "1b579360-8c6f-4472-af4e-1e6a98dd7cd2",
+      "name": "AGENTE SARA",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"eventTypeId\": 3502752,\n  \"start\": \"{{$fromAI('startUtc', 'Hora UTC del slot de CHECK FREE SLOTS con Z al final. Ejemplo: 2025-10-13T09:30:00Z')}}\",\n  \"attendee\": {\n    \"name\": \"{{$fromAI('fullName', 'Nombre formateado. Ejemplo: Maria Garcia')}}\",\n    \"email\": \"{{$fromAI('email', 'Email válido. Ejemplo: maria@gmail.com')}}\",\n    \"timeZone\": \"Europe/Madrid\",\n    \"phoneNumber\": \"{{$fromAI('phone', 'Teléfono +34. Ejemplo: +34 631 97 59 01')}}\"\n  },\n  \"lengthInMinutes\": {{$fromAI('duration', 'Número: 30, 45, 50 o 75. Ejemplo: 45')}},\n  \"bookingFieldsResponses\": {\n     \"service\": \"{{$fromAI('service', 'Nombre exacto del servicio')}}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        1824
+      ],
+      "id": "e4eccfb1-f713-427e-82a7-060c4e610ce9",
+      "name": "CREATE BOOKING"
+    },
+    {
+      "parameters": {
+        "content": "## CHATGPT API KEY\n\n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",
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        1424
+      ],
+      "id": "215eb64f-c85b-4f55-b87b-9d8c9d04cf30",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        2224
+      ],
+      "id": "612d8ba6-4aac-476b-b2eb-a22361db4bfe",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-11T15:46:18.689Z",
+      "createdAt": "2025-12-11T15:46:18.689Z",
+      "role": "workflow:owner",
+      "workflowId": "xCjnLJd2lUOf8DvL",
+      "projectId": "8dA9Em61CLw7Lgze"
+    }
+  ],
+  "staticData": null,
+  "tags": [
+    {
+      "updatedAt": "2025-12-11T15:09:34.313Z",
+      "createdAt": "2025-12-11T15:09:34.313Z",
+      "id": "qXeon9T5ZTHVJuNt",
+      "name": "GENERAL"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-11T22:38:36.343Z",
+  "versionId": "28f3a43e-0688-455a-b526-14cf2e63bf0a"
+}
