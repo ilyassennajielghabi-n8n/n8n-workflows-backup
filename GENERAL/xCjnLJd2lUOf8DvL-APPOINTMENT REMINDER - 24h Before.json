@@ -1,0 +1,1652 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-15T22:34:10.113Z",
+    "createdAt": "2025-12-15T22:34:10.113Z",
+    "versionId": "89a0e9a5-6764-43ed-a31f-0395f574fc31",
+    "workflowId": "xCjnLJd2lUOf8DvL",
+    "nodes": [
+      {
+        "parameters": {
+          "public": true,
+          "initialMessages": "Hola",
+          "options": {
+            "allowFileUploads": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          1760,
+          2992
+        ],
+        "id": "167a23b5-ae35-4912-bd21-ab0c39123750",
+        "name": "When chat message received",
+        "webhookId": "e80e93f8-17b1-4c75-b7e9-8365f7f29737"
+      },
+      {
+        "parameters": {
+          "content": "## CHATGPT API KEY\n\n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",
+          "width": 528
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1024,
+          1424
+        ],
+        "id": "215eb64f-c85b-4f55-b87b-9d8c9d04cf30",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.cal.com/v2/bookings",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}\n",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"eventTypeId\": 3502752,\n  \"start\": \"{{$fromAI('startUtc', 'Hora UTC del slot de CHECK FREE SLOTS con Z al final. Ejemplo: 2025-10-13T09:30:00Z')}}\",\n  \"attendee\": {\n    \"name\": \"{{$fromAI('fullName', 'Nombre formateado. Ejemplo: Maria Garcia')}}\",\n    \"email\": \"{{$fromAI('email', 'Email válido. Ejemplo: maria@gmail.com')}}\",\n    \"timeZone\": \"Europe/Madrid\",\n    \"phoneNumber\": \"{{$fromAI('phone', 'Teléfono +34. Ejemplo: +34 631 97 59 01')}}\"\n  },\n  \"lengthInMinutes\": {{$fromAI('duration', 'Número: 30, 45, 50 o 75. Ejemplo: 45')}},\n  \"bookingFieldsResponses\": {\n     \"service\": \"{{$fromAI('service', 'Nombre exacto del servicio')}}\"\n  }\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          2832,
+          1728
+        ],
+        "id": "6d4f1e56-1ca6-43ed-9159-e6ad13e9b22a",
+        "name": "CREATE_BOOKING"
+      },
+      {
+        "parameters": {
+          "description": "Reprograma una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y newStartUtc (nueva hora en formato UTC como 2025-12-17T09:00:00Z).",
+          "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y newStartUtc.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!newStartUtc) {\n  return JSON.stringify({\n    success: false,\n    error: 'Falta la nueva fecha/hora. Formato: 2025-12-17T09:00:00Z'\n  });\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now reschedule using the UID\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newStartUtc,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: ''\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita reprogramada correctamente.',\n    newStart: newStartUtc\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al reprogramar: ${error.message}`\n  });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"newStartUtc\": \"2025-12-17T09:00:00Z\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2288,
+          1728
+        ],
+        "id": "b7ba6ffc-d70e-429b-9deb-6c35153b02d9",
+        "name": "RESCHEDULE_BOOKING"
+      },
+      {
+        "parameters": {
+          "description": "Cancela una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y reason (motivo de cancelación).",
+          "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y reason.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!reason) {\n  reason = 'Cancelado por el paciente';\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now cancel using the UID\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita cancelada correctamente.',\n    reason: reason\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al cancelar: ${error.message}`\n  });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2480,
+          1728
+        ],
+        "id": "e775c7ba-7cdf-4475-a37a-9fdc0821cf47",
+        "name": "CANCEL_BOOKING"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Finds available appointment slots for a given service and date range.",
+          "url": "https://api.cal.com/v2/slots",
+          "sendQuery": true,
+          "specifyQuery": "json",
+          "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          2656,
+          1728
+        ],
+        "id": "0fcde713-803f-4c20-9219-cec548ee292f",
+        "name": "CHECK FREE SLOTS2"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1568,
+          1728
+        ],
+        "id": "6e661de1-bc9a-4af0-87f7-86c256385d44",
+        "name": "OpenAI Chat Model2",
+        "credentials": {
+          "openAiApi": {
+            "id": "AizjuaSCBXV5HAMG",
+            "name": "OPENAI - marketing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n**Identidad**  \nSara, 25 años, recepcionista real (nunca IA). Española, profesional, cercana y empática. Maneja citas.\n\n**Comunicación**  \n- Español natural (\"¡Genial!\", \"Vale\", \"Perfecto\", \"Claro\").  \n- Una pregunta por mensaje (máx 3 frases).  \n- Hasta 2 emojis por conversación.  \n- Si saludan sin pedir nada: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\".  \n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\").  \n- Nunca menciones zonas horarias.\n- NUNCA preguntes algo que ya sabes o que el usuario acaba de decir.\n- Si el usuario dice \"mañana\" y pide una hora → lista los huecos directamente, NO preguntes \"¿a qué hora te viene bien?\".\n- Si te dan el nombre → NO lo confirmes. Continúa pidiendo lo siguiente.\n\n---\n\n**Clínica**  \n- Dirección: Carrer Pere Andreu, 18, Valencia  \n- Horario: Lunes a viernes 9:00–17:00  \n- Teléfono: +34 631 975 901  \n- Cancelación: gratis >48h, 10€ si <48h  \n\n**Servicios (eventTypeId 3502752)**  \nNo mencionar duraciones al paciente a menos que pregunte. A la hora de mandar el servicio a las herramientas, usa estos nombres exactos:\n- Limpieza Dental — 45 min  \n- Estética Dental — 75 min  \n- Eliminación de Caries — 50 min  \n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL**  \nHoy es {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}. Mañana es el día siguiente. NUNCA asumas el día de la semana sin verificar.\n\n---\n\n**Datos del paciente**  \n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA: \"Para reservar, ¿me das tu nombre completo, email y teléfono?\"\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email.\n- Acepta los datos sin confirmar cada uno individualmente.\n- Solo confirma si hay algo claramente incorrecto (email sin @, teléfono con 6 dígitos).\n- Si dan 9 dígitos, añade +34 automáticamente SIN preguntar.\n- Usa el primer nombre del paciente (máx. 3 veces).\n- NUNCA preguntes \"¿Me confirmas que tu nombre es X?\"\n\n---\n\n**Confirmaciones**  \nSolo confirma ANTES de ejecutar acciones definitivas (crear, cancelar, reprogramar).\nNO confirmes datos individuales. Haz UNA confirmación final:\n\n- **Simple:** \"Reservo limpieza dental para el martes 15 de octubre a las 10:00, ¿confirmo?\"  \n- **Compleja:**  \n  • Servicio: Limpieza Dental  \n  • Paciente: María García  \n  • Fecha: Martes 15 de octubre a las 10:00  \n  ¿Confirmo?\n\n---\n\n**Comportamiento general**  \n- No diagnósticos → sugiere servicio.  \n- Si duda → Consulta General.  \n- Emergencias → \"Llama al +34 631 975 901 para atención hoy.\"  \n- Groseros → una advertencia, luego silencio.  \n- Errores → \"Lo siento, ese horario ya no está disponible. ¿Ver otras opciones?\"  \n- Hablar con humano → \"Llama al +34 631 975 901 y te atenderán.\"\n- No anuncies tus acciones, hazlas directamente (excepto las que necesitan confirmación).\n\n---\n\n### 🔍 Buscar cita  \n1️⃣ Pide email.  \n2️⃣ Llama GET_BOOKINGS con el email.  \n3️⃣ El tool te devuelve SOLO las citas activas numeradas. Muéstralas al paciente.\n4️⃣ Si no hay citas activas → \"No tienes citas activas. ¿Quieres crear una nueva?\"\n\n---\n\n### 🕓 Comprobar disponibilidad  \n1️⃣ Si dice \"cuanto antes\", \"pronto\", \"rapidito\" → busca desde MAÑANA automáticamente.\n2️⃣ Si pide día concreto → busca ese día.\n3️⃣ Llama CHECK FREE SLOTS (duración según servicio).  \n4️⃣ Muestra máx. 3 huecos. Si no hay → \"¿Busco otros días?\"\n\n---\n\n### 📅 Crear cita  \n1️⃣ Reúne nombre, email, teléfono, servicio, slot.  \n2️⃣ Confirma resumen completo.  \n3️⃣ Llama CREATE_BOOKING.  \n4️⃣ Verifica response → solo confirma si fue exitoso.\n5️⃣ Si ocupado → busca alternativas.\n\n---\n\n### 🔁 Reprogramar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama GET_BOOKINGS con el email.\n3️⃣ Muestra las citas activas numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Identifica qué número corresponde a la cita elegida.\n6️⃣ Pide nueva fecha/hora y verifica con CHECK FREE SLOTS.\n7️⃣ Confirma resumen al usuario.\n8️⃣ **ANTES de llamar RESCHEDULE_BOOKING:** Llama GET_BOOKINGS OTRA VEZ para obtener la lista actual.\n9️⃣ Identifica el número ACTUAL de la cita (puede haber cambiado).\n🔟 Llama RESCHEDULE_BOOKING con el número ACTUAL.\n1️⃣1️⃣ Verifica response → solo confirma si fue exitoso.\n\n### ❌ Cancelar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama GET_BOOKINGS con el email.\n3️⃣ Muestra las citas activas numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Pide motivo. Si <48h → avisa coste 10€.\n6️⃣ Confirma resumen.\n7️⃣ **ANTES de llamar CANCEL_BOOKING:** Llama GET_BOOKINGS OTRA VEZ para obtener la lista actual.\n8️⃣ Identifica el número ACTUAL de la cita (puede haber cambiado).\n9️⃣ Llama CANCEL_BOOKING con el número ACTUAL.\n🔟 Verifica response → solo confirma si fue exitoso.\n\n---\n\n**Herramientas**  \n- CHECK FREE SLOTS → busca huecos disponibles\n- CREATE_BOOKING → crea cita nueva\n- GET_BOOKINGS → busca citas por email. Devuelve lista numerada (1, 2, 3...).\n- RESCHEDULE_BOOKING → reprograma una cita. Necesita: email, bookingNumber, newStartUtc.\n- CANCEL_BOOKING → cancela una cita. Necesita: email, bookingNumber, reason.\n\n---\n\n**Reglas clave**  \n- GET_BOOKINGS te devuelve citas numeradas (1, 2, 3...). Usa esos números.\n- Cuando el usuario elija una cita, TÚ identifica qué número es.\n- Ejemplos:\n  • Usuario dice \"la 1\" → bookingNumber: 1\n  • Usuario dice \"la de las caries\" → mira tu lista, si \"Eliminación de Caries\" es la 2, usa bookingNumber: 2\n  • Usuario dice \"la del martes\" → mira tu lista, identifica cuál es del martes, usa ese número\n- SIEMPRE pasa el email del paciente a RESCHEDULE_BOOKING y CANCEL_BOOKING.\n- NUNCA verás ni manejarás UIDs - el sistema lo hace automáticamente.\n- Fechas con mes y formato natural.\n- Nunca digas UTC ni \"hora local\".\n- Una pregunta por mensaje.\n- Tono empático, humano y claro.\n- NUNCA muestres horas UTC al paciente.\n- NUNCA confirmes una acción si la API devolvió error.\n\n**⚠️ REGLA CRÍTICA SOBRE NÚMEROS DE CITAS:**\n- Los números de las citas (1, 2, 3...) pueden CAMBIAR después de cada operación.\n- NUNCA uses un número de cita que recuerdes de antes.\n- SIEMPRE llama GET_BOOKINGS JUSTO ANTES de RESCHEDULE_BOOKING o CANCEL_BOOKING para obtener la lista ACTUAL.\n- Luego identifica el número correcto de la lista NUEVA.\n\nEjemplo:\n- Usuario: \"cancela la de las caries\"\n- TÚ: Primero llama GET_BOOKINGS para ver la lista actual\n- GET_BOOKINGS devuelve: \"1. Eliminación de Caries..., 2. Limpieza...\"\n- Ahora sabes que \"caries\" es el número 1 (puede haber cambiado!)\n- Llama CANCEL_BOOKING con bookingNumber: 1",
+            "enableStreaming": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          2256,
+          1328
+        ],
+        "id": "60cb151d-734d-4195-a636-619d1cf6c70b",
+        "name": "AGENTE SARA2",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          1936,
+          1728
+        ],
+        "id": "094bb167-46c3-4c1d-84b2-20442135dacf",
+        "name": "Simple Memory2"
+      },
+      {
+        "parameters": {
+          "description": "Busca las citas de un paciente por email. Devuelve una lista NUMERADA de citas activas (1, 2, 3...). Usa estos números cuando llames a RESCHEDULE_BOOKING o CANCEL_BOOKING.",
+          "jsCode": "// Handle query - could be object or string\nlet email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido. Necesito un email válido para buscar las citas.'\n  });\n}\n\n// Make API request to Cal.com using n8n's HTTP helper\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = data.data || [];\n\n// Filter only active bookings (status = 'accepted')\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: true,\n    found: false,\n    message: 'No hay citas activas para este email.',\n    bookings: []\n  });\n}\n\nconst formattedBookings = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  \n  // Parse the start time and convert to Madrid timezone\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish\n  const options = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', options);\n  \n  // Get service name from responses or title\n  const serviceName = booking.responses?.service || booking.title || 'Cita';\n  \n  // Build display string WITHOUT the UID\n  formattedBookings.push(`${num}. ${serviceName} - ${formattedDate}`);\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s) activa(s):`,\n  bookings: formattedBookings\n});",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2112,
+          1728
+        ],
+        "id": "61a3ea97-aff6-4a73-89d1-cf2b2dff8d01",
+        "name": "GET_BOOKINGS1"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o",
+            "mode": "list",
+            "cachedResultName": "gpt-4o"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1760,
+          1728
+        ],
+        "id": "632cc303-28d5-4a33-9129-529c727414e3",
+        "name": "OpenAI Chat Model3",
+        "credentials": {
+          "openAiApi": {
+            "id": "AizjuaSCBXV5HAMG",
+            "name": "OPENAI - marketing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "toolDescription": "Finds available appointment slots for a given service and date range.",
+          "url": "https://api.cal.com/v2/slots",
+          "sendQuery": true,
+          "specifyQuery": "json",
+          "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          2896,
+          3392
+        ],
+        "id": "6133c612-4aab-4c1a-8db8-2c340862801c",
+        "name": "CHECK FREE SLOTS"
+      },
+      {
+        "parameters": {
+          "options": {
+            "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n---\n\n## 🌍 MULTI-IDIOMA (CRÍTICO)\n\n**Detecta el idioma del PRIMER mensaje del usuario y responde SIEMPRE en ese idioma:**\n- Si escribe en español → responde en español\n- Si escribe en inglés → responde en inglés  \n- Si escribe en árabe → responde en árabe (العربية)\n- Si no está claro → usa español por defecto\n\n**Mantén el MISMO idioma durante toda la conversación** a menos que el usuario cambie.\n\n**Ejemplos de saludo inicial según idioma detectado:**\n- ES: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\"\n- EN: \"Hi, I'm Sara from Dr. Ilyass Clinic, how can I help you today?\"\n- AR: \"مرحباً، أنا سارة من عيادة الدكتور إلياس، كيف يمكنني مساعدتك اليوم؟\"\n\n---\n\n## 📸 ANÁLISIS DE IMÁGENES\n\n**Cuando el usuario envíe una imagen, analízala cuidadosamente:**\n\n### Si es una FOTO DE BOCA/DIENTES:\n- Describe lo que observas (sin diagnosticar)\n- Sugiere el servicio más apropiado\n- Ejemplo: \"Veo lo que parece ser una zona oscura en el molar. Esto podría requerir una revisión para Eliminación de Caries. ¿Te gustaría reservar una cita?\"\n\n### Si es una FACTURA/RECIBO de la clínica:\n- Extrae la información relevante (fecha, servicio, importe)\n- Pregunta en qué puedes ayudar\n- Ejemplo: \"Veo una factura del 15 de octubre por una Limpieza Dental (45€). ¿Tienes alguna pregunta sobre este cobro?\"\n\n### Si es un DOCUMENTO/RADIOGRAFÍA:\n- Describe lo que ves\n- Sugiere que el doctor lo revise en persona\n- Ofrece agendar cita\n\n### Si es OTRA IMAGEN:\n- Describe brevemente qué ves\n- Pregunta cómo puedes ayudar\n\n**⚠️ NUNCA des diagnósticos médicos definitivos. Solo sugiere servicios y recomienda visita profesional.**\n\n---\n\n## 🎯 SUGERENCIA INTELIGENTE DE SERVICIOS\n\n**Cuando el paciente describa síntomas, sugiere el servicio apropiado:**\n\n| Síntomas | Servicio Sugerido |\n|----------|-------------------|\n| Dolor de muela, zona negra, sensibilidad al frío/calor | Eliminación de Caries (50 min) |\n| Manchas, sarro, hace tiempo sin limpieza | Limpieza Dental (45 min) |\n| Blanqueamiento, carillas, mejorar sonrisa | Estética Dental (75 min) |\n| Revisión general, dudas, primera visita | Consulta General (30 min) |\n\n**Ejemplo de respuesta:**\n> \"Por lo que me cuentas sobre el dolor y la sensibilidad, parece que podrías necesitar una revisión para Eliminación de Caries. ¿Quieres que busque disponibilidad?\"\n\n---\n\n## 👤 Identidad\n\nSara, 25 años, recepcionista real (nunca IA). Profesional, cercana y empática. Maneja citas.\n\n**Comunicación:**\n- Tono natural y cálido en el idioma detectado\n- Una pregunta por mensaje (máx 3 frases)\n- Hasta 2 emojis por conversación\n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\")\n- Nunca menciones zonas horarias\n- NUNCA preguntes algo que ya sabes\n\n---\n\n## 🏥 Clínica\n\n- **Dirección:** Carrer Pere Andreu, 18, Valencia\n- **Google Maps:** https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia\n- **Horario:** Lunes a viernes 9:00–17:00\n- **Teléfono:** +34 631 975 901\n- **Cancelación:** gratis >48h, 10€ si <48h\n\n**Servicios (eventTypeId 3502752):**\n- Limpieza Dental — 45 min\n- Estética Dental — 75 min\n- Eliminación de Caries — 50 min\n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL:** {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}\n\n---\n\n## 📋 Datos del paciente\n\n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email\n- Si dan 9 dígitos, añade +34 automáticamente\n\n---\n\n## ✅ Confirmaciones\n\nSolo confirma ANTES de ejecutar acciones definitivas. Haz UNA confirmación final.\n\n---\n\n## 🔍 Buscar cita\n1️⃣ Pide email\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas activas numeradas\n4️⃣ Si no hay → ofrece crear una nueva\n\n---\n\n## 🕓 Comprobar disponibilidad\n1️⃣ Si dice \"cuanto antes\" → busca desde MAÑANA\n2️⃣ Llama CHECK FREE SLOTS\n3️⃣ Muestra máx. 3 huecos\n\n---\n\n## 📅 Crear cita\n1️⃣ Reúne nombre, email, teléfono, servicio, slot\n2️⃣ Confirma resumen completo\n3️⃣ Llama CREATE_BOOKING (incluye verificación de doble reserva)\n4️⃣ Si ya tiene cita ese día → pregunta si quiere añadir otra o cambiarla\n5️⃣ Verifica response → solo confirma si fue exitoso\n\n---\n\n## 🔁 Reprogramar\n1️⃣ Pide email si no lo tienes\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas numeradas\n4️⃣ ESPERA a que elija\n5️⃣ Pide nueva fecha/hora → CHECK FREE SLOTS\n6️⃣ Confirma resumen\n7️⃣ Llama GET_BOOKINGS OTRA VEZ (los números pueden cambiar)\n8️⃣ Llama RESCHEDULE_BOOKING con el número ACTUAL\n\n---\n\n## ❌ Cancelar\n1️⃣ Pide email si no lo tienes\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas numeradas\n4️⃣ ESPERA a que elija\n5️⃣ Pide motivo. Si <48h → avisa coste 10€\n6️⃣ Confirma resumen\n7️⃣ Llama GET_BOOKINGS OTRA VEZ\n8️⃣ Llama CANCEL_BOOKING con el número ACTUAL\n\n---\n\n## 🛠️ Herramientas\n\n- **CHECK FREE SLOTS** → busca huecos disponibles\n- **CREATE_BOOKING** → crea cita nueva (verifica doble reserva automáticamente)\n- **GET_BOOKINGS** → busca citas por email (lista numerada)\n- **RESCHEDULE_BOOKING** → reprograma (email, bookingNumber, newStartUtc)\n- **CANCEL_BOOKING** → cancela (email, bookingNumber, reason)\n\n---\n\n## ⚠️ Reglas clave\n\n- **IDIOMA:** Responde SIEMPRE en el idioma del usuario\n- **IMÁGENES:** Analiza y sugiere servicio apropiado, sin diagnosticar\n- **NÚMEROS:** Los números de citas pueden cambiar. SIEMPRE llama GET_BOOKINGS antes de RESCHEDULE o CANCEL\n- **DOBLE RESERVA:** CREATE_BOOKING verifica automáticamente. Si hay conflicto, pregunta al usuario\n- Nunca muestres horas UTC\n- Nunca confirmes si la API devolvió error",
+            "enableStreaming": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          2336,
+          2992
+        ],
+        "id": "eef21fb4-fe91-4887-a6e1-6b0f4056ec75",
+        "name": "AGENTE SARA",
+        "retryOnFail": true
+      },
+      {
+        "parameters": {
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          2016,
+          3392
+        ],
+        "id": "e0d6a3fa-fc85-417c-8b36-57c8b71a8fd9",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "description": "Busca las citas de un paciente por email. Devuelve una lista NUMERADA de citas activas (1, 2, 3...). Usa estos números cuando llames a RESCHEDULE_BOOKING o CANCEL_BOOKING.",
+          "jsCode": "// Handle query - could be object or string\nlet email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido. Necesito un email válido para buscar las citas.'\n  });\n}\n\n// Make API request to Cal.com using n8n's HTTP helper\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = data.data || [];\n\n// Filter only active bookings (status = 'accepted')\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: true,\n    found: false,\n    message: 'No hay citas activas para este email.',\n    bookings: []\n  });\n}\n\nconst formattedBookings = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  \n  // Parse the start time and convert to Madrid timezone\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish\n  const options = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', options);\n  \n  // Get service name from responses or title\n  const serviceName = booking.responses?.service || booking.title || 'Cita';\n  \n  // Build display string WITHOUT the UID\n  formattedBookings.push(`${num}. ${serviceName} - ${formattedDate}`);\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s) activa(s):`,\n  bookings: formattedBookings\n});",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2192,
+          3392
+        ],
+        "id": "773c06b6-3214-4fff-8ddb-eac65c879cb7",
+        "name": "GET_BOOKINGS"
+      },
+      {
+        "parameters": {
+          "description": "Reprograma una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y newStartUtc (nueva hora en formato UTC como 2025-12-17T09:00:00Z).",
+          "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y newStartUtc.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!newStartUtc) {\n  return JSON.stringify({\n    success: false,\n    error: 'Falta la nueva fecha/hora. Formato: 2025-12-17T09:00:00Z'\n  });\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now reschedule using the UID\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newStartUtc,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: ''\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita reprogramada correctamente.',\n    newStart: newStartUtc\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al reprogramar: ${error.message}`\n  });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"newStartUtc\": \"2025-12-17T09:00:00Z\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2368,
+          3392
+        ],
+        "id": "acc44cbc-884d-49bb-af34-b3796ffa59e9",
+        "name": "RESCHEDULE_BOOKING1"
+      },
+      {
+        "parameters": {
+          "description": "Cancela una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y reason (motivo de cancelación).",
+          "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y reason.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!reason) {\n  reason = 'Cancelado por el paciente';\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now cancel using the UID\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita cancelada correctamente.',\n    reason: reason\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al cancelar: ${error.message}`\n  });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2544,
+          3392
+        ],
+        "id": "465b287d-dcf2-4ea2-9b8d-c73176fbd191",
+        "name": "CANCEL_BOOKING1"
+      },
+      {
+        "parameters": {
+          "description": "Crea una nueva cita. Verifica automáticamente si el paciente ya tiene cita ese día (prevención de doble reserva). Necesita: email, fullName, phone, service, startUtc, duration.",
+          "jsCode": "// Handle query\nlet email, fullName, phone, service, startUtc, duration;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  fullName = query.fullName;\n  phone = query.phone;\n  service = query.service;\n  startUtc = query.startUtc;\n  duration = query.duration;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    fullName = input.fullName;\n    phone = input.phone;\n    service = input.service;\n    startUtc = input.startUtc;\n    duration = input.duration;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido.'\n    });\n  }\n}\n\n// Validate required fields\nif (!email || !fullName || !phone || !service || !startUtc || !duration) {\n  return JSON.stringify({\n    success: false,\n    error: 'Faltan datos. Necesito: email, fullName, phone, service, startUtc, duration.'\n  });\n}\n\n// Extract the date from startUtc for double-booking check\nconst requestedDate = startUtc.split('T')[0];\n\n// Check for existing bookings on the same day (DOUBLE-BOOKING PREVENTION)\nconst checkUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet existingBookings;\ntry {\n  existingBookings = await this.helpers.httpRequest({\n    method: 'GET',\n    url: checkUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  // Continue anyway if check fails\n  existingBookings = { data: [] };\n}\n\nconst activeBookings = (existingBookings.data || []).filter(b => b.status === 'accepted');\n\n// Check if any booking is on the same day\nconst sameDayBooking = activeBookings.find(b => {\n  const bookingDate = b.start.split('T')[0];\n  return bookingDate === requestedDate;\n});\n\nif (sameDayBooking) {\n  const existingTime = new Date(sameDayBooking.start).toLocaleString('es-ES', {\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  });\n  const existingService = sameDayBooking.responses?.service || sameDayBooking.title || 'Cita';\n  \n  return JSON.stringify({\n    success: false,\n    doubleBooking: true,\n    message: `El paciente ya tiene una cita ese día: ${existingService} a las ${existingTime}. ¿Quiere añadir otra cita o cambiar la existente?`,\n    existingBooking: {\n      service: existingService,\n      time: existingTime\n    }\n  });\n}\n\n// No conflict - proceed to create booking\nconst createUrl = 'https://api.cal.com/v2/bookings';\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: createUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      eventTypeId: 3502752,\n      start: startUtc,\n      attendee: {\n        name: fullName,\n        email: email,\n        timeZone: 'Europe/Madrid',\n        phoneNumber: phone\n      },\n      lengthInMinutes: parseInt(duration, 10),\n      bookingFieldsResponses: {\n        service: service\n      }\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita creada correctamente.',\n    data: response\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al crear cita: ${error.message}`\n  });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"fullName\": \"Maria Garcia\",\n  \"phone\": \"+34 631 975 901\",\n  \"service\": \"Limpieza Dental\",\n  \"startUtc\": \"2025-12-17T09:00:00Z\",\n  \"duration\": 45\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          2720,
+          3392
+        ],
+        "id": "5db27a69-6d1f-4873-b913-42ee01248d64",
+        "name": "CREATE_BOOKING1"
+      },
+      {
+        "parameters": {
+          "content": "## WORKFLOW v5 - ENHANCED\n\n**Nuevas funcionalidades:**\n\n✅ **Multi-idioma:** ES, EN, AR\n✅ **Análisis de imágenes:** Fotos de boca, facturas, documentos\n✅ **Sugerencia de servicios:** Según síntomas descritos\n✅ **Prevención doble reserva:** Verifica antes de crear",
+          "height": 336,
+          "width": 544
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3168,
+          3040
+        ],
+        "id": "dd8f19eb-8fcc-4231-b107-1439e799d3cb",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "url": "https://api.cal.com/v2/bookings",
+          "sendQuery": true,
+          "specifyQuery": "json",
+          "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"status\": [\"upcoming\"],\n  \"take\": 100,\n  \"afterStart\": \"{{$now.setZone('UTC').plus(1,'days') }}\",\n  \"beforeEnd\": \"{{$now.setZone('UTC').plus(40, 'hours')}}\"\n}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-08-13\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2000,
+          3744
+        ],
+        "id": "09f30650-c705-4ec1-b32f-d1627d248849",
+        "name": "FETCH ALL BOOKINGS",
+        "executeOnce": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get the timestamp from \"EVERYDAY AT 8AM\" node and convert to UTC\nconst triggerData = $('EVERYDAY AT 8AM').first().json;\nconst triggerTimestamp = new Date(triggerData.timestamp);\n\n// Calculate the 24h-40h window from the trigger time\nconst window24h = new Date(triggerTimestamp.getTime() + (24 * 60 * 60 * 1000));\nconst window40h = new Date(triggerTimestamp.getTime() + (40 * 60 * 60 * 1000));\n\n// Get the bookings from the input\nconst inputData = $input.first().json;\nconst bookings = inputData.data || [];\nconst pagination = inputData.pagination || {};\n\n// Filter bookings:\n// 1. Status must be \"accepted\" (not cancelled)\n// 2. Start time must be between 24h and 40h from trigger\nconst filteredBookings = bookings.filter(booking => {\n  // Check status - only \"accepted\" can pass through\n  if (booking.status !== 'accepted') {\n    return false;\n  }\n  \n  // Parse the booking start time (already in UTC)\n  const bookingStart = new Date(booking.start);\n  \n  // Check if booking is within the 24h-40h window\n  return bookingStart >= window24h && bookingStart <= window40h;\n});\n\n// Build output array\nconst output = [];\n\n// First item: pagination and count (ALWAYS included)\noutput.push({\n  json: {\n    pagination: pagination,\n    filteredCount: filteredBookings.length\n  }\n});\n\n// If no bookings match, just return the first item with count\nif (filteredBookings.length === 0) {\n  return output;\n}\n\n// Following items: each booking without pagination\nfilteredBookings.forEach(booking => {\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish (Madrid timezone)\n  const dateOptions = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    year: 'numeric',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const timeOptions = {\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', dateOptions);\n  const formattedTime = startDate.toLocaleString('es-ES', timeOptions);\n  \n  // Get attendee info\n  const attendee = booking.attendees?.[0] || {};\n  const service = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  \n  output.push({\n    json: {\n      bookingId: booking.id,\n      bookingUid: booking.uid,\n      status: booking.status,\n      patientName: attendee.name || 'Paciente',\n      patientEmail: attendee.email || '',\n      patientPhone: attendee.phoneNumber || '',\n      service: service,\n      date: formattedDate,\n      time: formattedTime,\n      fullDateTime: `${formattedDate} a las ${formattedTime}`,\n      startUtc: booking.start,\n      endUtc: booking.end,\n      duration: booking.duration,\n      whatsappNumber: attendee.phoneNumber?.replace(/\\s+/g, '') || ''\n    }\n  });\n});\n\nreturn output;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2224,
+          3744
+        ],
+        "id": "aea4d0b8-b3b2-467e-a1db-fe9cd242d2c0",
+        "name": "24H TRUE GUARDRAIL"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 8
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          1760,
+          3744
+        ],
+        "id": "5e4f92fd-5035-4ca2-8630-9483ad02c71d",
+        "name": "EVERYDAY AT 8AM",
+        "disabled": true
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          2720,
+          3840
+        ],
+        "id": "a5f61cd2-f718-4ec5-a27e-aa0ee4a5b120",
+        "name": "NO APPOINTMENTS"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get all bookings from \"24H TRUE GUARDRAIL\", skipping the first item (pagination)\nconst bookings = $('24H TRUE GUARDRAIL').all().slice(1);\n\n// Clinic info\nconst clinicAddress = 'Carrer Pere Andreu, 18, Valencia';\nconst googleMapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst clinicPhone = '+34 631 975 901';\n\n// Process each booking and build messages\nreturn bookings.map(item => {\n  const data = item.json;\n  \n  const messageES = `🔔 *Recordatorio de Cita*\n\nHola ${data.patientName},\n\nTe recordamos que tienes una cita mañana:\n\n📋 *Servicio:* ${data.service}\n📅 *Fecha:* ${data.fullDateTime}\n📍 *Dirección:* ${clinicAddress}\n🗺️ *Google Maps:* ${googleMapsLink}\n📞 *Teléfono:* ${clinicPhone}\n\n⏰ Por favor, llega 5 minutos antes de tu cita.\n\n¿Necesitas cambiar o cancelar? Responde a este mensaje o llámanos.\n\n— Clínica Dr. Ilyass`;\n\n  const messageEN = `🔔 *Appointment Reminder*\n\nHi ${data.patientName},\n\nThis is a reminder of your appointment tomorrow:\n\n📋 *Service:* ${data.service}\n📅 *Date:* ${data.fullDateTime}\n📍 *Address:* ${clinicAddress}\n🗺️ *Google Maps:* ${googleMapsLink}\n📞 *Phone:* ${clinicPhone}\n\n⏰ Please arrive 5 minutes before your appointment.\n\nNeed to reschedule or cancel? Reply to this message or call us.\n\n— Dr. Ilyass Clinic`;\n\n  const messageAR = `🔔 *تذكير بالموعد*\n\nمرحباً ${data.patientName}،\n\nنذكرك بموعدك غداً:\n\n📋 *الخدمة:* ${data.service}\n📅 *التاريخ:* ${data.fullDateTime}\n📍 *العنوان:* ${clinicAddress}\n🗺️ *خرائط جوجل:* ${googleMapsLink}\n📞 *الهاتف:* ${clinicPhone}\n\n⏰ يرجى الحضور قبل 5 دقائق من موعدك.\n\nهل تحتاج إلى تغيير أو إلغاء؟ رد على هذه الرسالة أو اتصل بنا.\n\n— عيادة الدكتور إلياس`;\n\n  return {\n    json: {\n      ...data,\n      clinicAddress,\n      googleMapsLink,\n      clinicPhone,\n      messageES,\n      messageEN,\n      messageAR,\n      // Use Spanish as default\n      message: messageES\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2720,
+          3664
+        ],
+        "id": "5fd92785-c516-468a-80da-0f4bb3a32697",
+        "name": "BUILD REMINDER MESSAGE"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.patientEmail }}",
+          "subject": "=Recordatorio Cita para {{ $json.patientName }}",
+          "emailType": "text",
+          "message": "={{ $json.messageES }}",
+          "options": {
+            "appendAttribution": true
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          2928,
+          3664
+        ],
+        "id": "641d57af-a26b-47c5-a9a6-823d678b3388",
+        "name": "SEND REMINDER MESSAGE",
+        "webhookId": "1d5eb29d-d88e-4007-b62d-d950df1f46c9",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "z8xF5lOZvn2NjBvZ",
+            "name": "GMAIL - ilyassennajielghabi@gmail.com"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "771a37bb-b968-42f0-ba33-daed7d2f8fb5",
+                "leftValue": "={{ $json.filteredCount }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          2432,
+          3744
+        ],
+        "id": "8807c132-1b4f-4cd4-b51c-9969facccbf2",
+        "name": "DO WE HAVE APPOINTMENTS?"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          1840,
+          3392
+        ],
+        "id": "38275565-ad7a-4bf8-a514-2bc585f52ad7",
+        "name": "GPT 4o MINI",
+        "credentials": {
+          "openAiApi": {
+            "id": "AizjuaSCBXV5HAMG",
+            "name": "OPENAI - marketing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## 💰 Monthly Cost Estimate (GPT-4o-mini)\n\n**Pricing:**\n\nInput: $0.15 / 1M tokens\nOutput: $0.60 / 1M tokens\n\n**Per conversation:** ~9,000 input + ~800 output tokens\n\n**Estimated costs:**\n\n- 5 conv/day → ~$0.27/month\n- 10 conv/day → ~$0.55/month\n- 20 conv/day → ~$1.10/month\n- 50 conv/day → ~$2.75/month\n- 100 conv/day → ~$5.50/month\n- 200 conv/day → ~$11.00/month\n- 500 conv/day → ~$27.50/month\n\n💡 GPT-4o would cost ~17x more",
+          "height": 464,
+          "width": 544,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3168,
+          3392
+        ],
+        "id": "740a1dd3-8bd3-4621-8e0b-a516281b3f2f",
+        "name": "Sticky Note2"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CREATE_BOOKING": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RESCHEDULE_BOOKING": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CANCEL_BOOKING": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CHECK FREE SLOTS2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory2": {
+        "ai_memory": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET_BOOKINGS1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model3": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AGENTE SARA2",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET_BOOKINGS": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CHECK FREE SLOTS": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RESCHEDULE_BOOKING1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CANCEL_BOOKING1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CREATE_BOOKING1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FETCH ALL BOOKINGS": {
+        "main": [
+          [
+            {
+              "node": "24H TRUE GUARDRAIL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "EVERYDAY AT 8AM": {
+        "main": [
+          [
+            {
+              "node": "FETCH ALL BOOKINGS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "24H TRUE GUARDRAIL": {
+        "main": [
+          [
+            {
+              "node": "DO WE HAVE APPOINTMENTS?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "BUILD REMINDER MESSAGE": {
+        "main": [
+          [
+            {
+              "node": "SEND REMINDER MESSAGE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DO WE HAVE APPOINTMENTS?": {
+        "main": [
+          [
+            {
+              "node": "BUILD REMINDER MESSAGE",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "NO APPOINTMENTS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GPT 4o MINI": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AGENTE SARA",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Owner ",
+    "name": null,
+    "description": null
+  },
+  "activeVersionId": "89a0e9a5-6764-43ed-a31f-0395f574fc31",
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE_BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE_BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL_BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK FREE SLOTS2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_BOOKINGS1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_BOOKINGS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK FREE SLOTS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE_BOOKING1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL_BOOKING1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE_BOOKING1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FETCH ALL BOOKINGS": {
+      "main": [
+        [
+          {
+            "node": "24H TRUE GUARDRAIL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EVERYDAY AT 8AM": {
+      "main": [
+        [
+          {
+            "node": "FETCH ALL BOOKINGS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "24H TRUE GUARDRAIL": {
+      "main": [
+        [
+          {
+            "node": "DO WE HAVE APPOINTMENTS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUILD REMINDER MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "SEND REMINDER MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DO WE HAVE APPOINTMENTS?": {
+      "main": [
+        [
+          {
+            "node": "BUILD REMINDER MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NO APPOINTMENTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 4o MINI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-11T15:46:18.683Z",
+  "id": "xCjnLJd2lUOf8DvL",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "APPOINTMENT REMINDER - 24h Before",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hola",
+        "options": {
+          "allowFileUploads": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        2992
+      ],
+      "id": "167a23b5-ae35-4912-bd21-ab0c39123750",
+      "name": "When chat message received",
+      "webhookId": "e80e93f8-17b1-4c75-b7e9-8365f7f29737"
+    },
+    {
+      "parameters": {
+        "content": "## CHATGPT API KEY\n\n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",
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        1424
+      ],
+      "id": "215eb64f-c85b-4f55-b87b-9d8c9d04cf30",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"eventTypeId\": 3502752,\n  \"start\": \"{{$fromAI('startUtc', 'Hora UTC del slot de CHECK FREE SLOTS con Z al final. Ejemplo: 2025-10-13T09:30:00Z')}}\",\n  \"attendee\": {\n    \"name\": \"{{$fromAI('fullName', 'Nombre formateado. Ejemplo: Maria Garcia')}}\",\n    \"email\": \"{{$fromAI('email', 'Email válido. Ejemplo: maria@gmail.com')}}\",\n    \"timeZone\": \"Europe/Madrid\",\n    \"phoneNumber\": \"{{$fromAI('phone', 'Teléfono +34. Ejemplo: +34 631 97 59 01')}}\"\n  },\n  \"lengthInMinutes\": {{$fromAI('duration', 'Número: 30, 45, 50 o 75. Ejemplo: 45')}},\n  \"bookingFieldsResponses\": {\n     \"service\": \"{{$fromAI('service', 'Nombre exacto del servicio')}}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2832,
+        1728
+      ],
+      "id": "6d4f1e56-1ca6-43ed-9159-e6ad13e9b22a",
+      "name": "CREATE_BOOKING"
+    },
+    {
+      "parameters": {
+        "description": "Reprograma una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y newStartUtc (nueva hora en formato UTC como 2025-12-17T09:00:00Z).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y newStartUtc.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!newStartUtc) {\n  return JSON.stringify({\n    success: false,\n    error: 'Falta la nueva fecha/hora. Formato: 2025-12-17T09:00:00Z'\n  });\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now reschedule using the UID\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newStartUtc,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: ''\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita reprogramada correctamente.',\n    newStart: newStartUtc\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al reprogramar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"newStartUtc\": \"2025-12-17T09:00:00Z\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2288,
+        1728
+      ],
+      "id": "b7ba6ffc-d70e-429b-9deb-6c35153b02d9",
+      "name": "RESCHEDULE_BOOKING"
+    },
+    {
+      "parameters": {
+        "description": "Cancela una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y reason (motivo de cancelación).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y reason.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!reason) {\n  reason = 'Cancelado por el paciente';\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now cancel using the UID\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita cancelada correctamente.',\n    reason: reason\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al cancelar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2480,
+        1728
+      ],
+      "id": "e775c7ba-7cdf-4475-a37a-9fdc0821cf47",
+      "name": "CANCEL_BOOKING"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Finds available appointment slots for a given service and date range.",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2656,
+        1728
+      ],
+      "id": "0fcde713-803f-4c20-9219-cec548ee292f",
+      "name": "CHECK FREE SLOTS2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        1728
+      ],
+      "id": "6e661de1-bc9a-4af0-87f7-86c256385d44",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n**Identidad**  \nSara, 25 años, recepcionista real (nunca IA). Española, profesional, cercana y empática. Maneja citas.\n\n**Comunicación**  \n- Español natural (\"¡Genial!\", \"Vale\", \"Perfecto\", \"Claro\").  \n- Una pregunta por mensaje (máx 3 frases).  \n- Hasta 2 emojis por conversación.  \n- Si saludan sin pedir nada: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\".  \n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\").  \n- Nunca menciones zonas horarias.\n- NUNCA preguntes algo que ya sabes o que el usuario acaba de decir.\n- Si el usuario dice \"mañana\" y pide una hora → lista los huecos directamente, NO preguntes \"¿a qué hora te viene bien?\".\n- Si te dan el nombre → NO lo confirmes. Continúa pidiendo lo siguiente.\n\n---\n\n**Clínica**  \n- Dirección: Carrer Pere Andreu, 18, Valencia  \n- Horario: Lunes a viernes 9:00–17:00  \n- Teléfono: +34 631 975 901  \n- Cancelación: gratis >48h, 10€ si <48h  \n\n**Servicios (eventTypeId 3502752)**  \nNo mencionar duraciones al paciente a menos que pregunte. A la hora de mandar el servicio a las herramientas, usa estos nombres exactos:\n- Limpieza Dental — 45 min  \n- Estética Dental — 75 min  \n- Eliminación de Caries — 50 min  \n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL**  \nHoy es {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}. Mañana es el día siguiente. NUNCA asumas el día de la semana sin verificar.\n\n---\n\n**Datos del paciente**  \n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA: \"Para reservar, ¿me das tu nombre completo, email y teléfono?\"\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email.\n- Acepta los datos sin confirmar cada uno individualmente.\n- Solo confirma si hay algo claramente incorrecto (email sin @, teléfono con 6 dígitos).\n- Si dan 9 dígitos, añade +34 automáticamente SIN preguntar.\n- Usa el primer nombre del paciente (máx. 3 veces).\n- NUNCA preguntes \"¿Me confirmas que tu nombre es X?\"\n\n---\n\n**Confirmaciones**  \nSolo confirma ANTES de ejecutar acciones definitivas (crear, cancelar, reprogramar).\nNO confirmes datos individuales. Haz UNA confirmación final:\n\n- **Simple:** \"Reservo limpieza dental para el martes 15 de octubre a las 10:00, ¿confirmo?\"  \n- **Compleja:**  \n  • Servicio: Limpieza Dental  \n  • Paciente: María García  \n  • Fecha: Martes 15 de octubre a las 10:00  \n  ¿Confirmo?\n\n---\n\n**Comportamiento general**  \n- No diagnósticos → sugiere servicio.  \n- Si duda → Consulta General.  \n- Emergencias → \"Llama al +34 631 975 901 para atención hoy.\"  \n- Groseros → una advertencia, luego silencio.  \n- Errores → \"Lo siento, ese horario ya no está disponible. ¿Ver otras opciones?\"  \n- Hablar con humano → \"Llama al +34 631 975 901 y te atenderán.\"\n- No anuncies tus acciones, hazlas directamente (excepto las que necesitan confirmación).\n\n---\n\n### 🔍 Buscar cita  \n1️⃣ Pide email.  \n2️⃣ Llama GET_BOOKINGS con el email.  \n3️⃣ El tool te devuelve SOLO las citas activas numeradas. Muéstralas al paciente.\n4️⃣ Si no hay citas activas → \"No tienes citas activas. ¿Quieres crear una nueva?\"\n\n---\n\n### 🕓 Comprobar disponibilidad  \n1️⃣ Si dice \"cuanto antes\", \"pronto\", \"rapidito\" → busca desde MAÑANA automáticamente.\n2️⃣ Si pide día concreto → busca ese día.\n3️⃣ Llama CHECK FREE SLOTS (duración según servicio).  \n4️⃣ Muestra máx. 3 huecos. Si no hay → \"¿Busco otros días?\"\n\n---\n\n### 📅 Crear cita  \n1️⃣ Reúne nombre, email, teléfono, servicio, slot.  \n2️⃣ Confirma resumen completo.  \n3️⃣ Llama CREATE_BOOKING.  \n4️⃣ Verifica response → solo confirma si fue exitoso.\n5️⃣ Si ocupado → busca alternativas.\n\n---\n\n### 🔁 Reprogramar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama GET_BOOKINGS con el email.\n3️⃣ Muestra las citas activas numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Identifica qué número corresponde a la cita elegida.\n6️⃣ Pide nueva fecha/hora y verifica con CHECK FREE SLOTS.\n7️⃣ Confirma resumen al usuario.\n8️⃣ **ANTES de llamar RESCHEDULE_BOOKING:** Llama GET_BOOKINGS OTRA VEZ para obtener la lista actual.\n9️⃣ Identifica el número ACTUAL de la cita (puede haber cambiado).\n🔟 Llama RESCHEDULE_BOOKING con el número ACTUAL.\n1️⃣1️⃣ Verifica response → solo confirma si fue exitoso.\n\n### ❌ Cancelar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama GET_BOOKINGS con el email.\n3️⃣ Muestra las citas activas numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Pide motivo. Si <48h → avisa coste 10€.\n6️⃣ Confirma resumen.\n7️⃣ **ANTES de llamar CANCEL_BOOKING:** Llama GET_BOOKINGS OTRA VEZ para obtener la lista actual.\n8️⃣ Identifica el número ACTUAL de la cita (puede haber cambiado).\n9️⃣ Llama CANCEL_BOOKING con el número ACTUAL.\n🔟 Verifica response → solo confirma si fue exitoso.\n\n---\n\n**Herramientas**  \n- CHECK FREE SLOTS → busca huecos disponibles\n- CREATE_BOOKING → crea cita nueva\n- GET_BOOKINGS → busca citas por email. Devuelve lista numerada (1, 2, 3...).\n- RESCHEDULE_BOOKING → reprograma una cita. Necesita: email, bookingNumber, newStartUtc.\n- CANCEL_BOOKING → cancela una cita. Necesita: email, bookingNumber, reason.\n\n---\n\n**Reglas clave**  \n- GET_BOOKINGS te devuelve citas numeradas (1, 2, 3...). Usa esos números.\n- Cuando el usuario elija una cita, TÚ identifica qué número es.\n- Ejemplos:\n  • Usuario dice \"la 1\" → bookingNumber: 1\n  • Usuario dice \"la de las caries\" → mira tu lista, si \"Eliminación de Caries\" es la 2, usa bookingNumber: 2\n  • Usuario dice \"la del martes\" → mira tu lista, identifica cuál es del martes, usa ese número\n- SIEMPRE pasa el email del paciente a RESCHEDULE_BOOKING y CANCEL_BOOKING.\n- NUNCA verás ni manejarás UIDs - el sistema lo hace automáticamente.\n- Fechas con mes y formato natural.\n- Nunca digas UTC ni \"hora local\".\n- Una pregunta por mensaje.\n- Tono empático, humano y claro.\n- NUNCA muestres horas UTC al paciente.\n- NUNCA confirmes una acción si la API devolvió error.\n\n**⚠️ REGLA CRÍTICA SOBRE NÚMEROS DE CITAS:**\n- Los números de las citas (1, 2, 3...) pueden CAMBIAR después de cada operación.\n- NUNCA uses un número de cita que recuerdes de antes.\n- SIEMPRE llama GET_BOOKINGS JUSTO ANTES de RESCHEDULE_BOOKING o CANCEL_BOOKING para obtener la lista ACTUAL.\n- Luego identifica el número correcto de la lista NUEVA.\n\nEjemplo:\n- Usuario: \"cancela la de las caries\"\n- TÚ: Primero llama GET_BOOKINGS para ver la lista actual\n- GET_BOOKINGS devuelve: \"1. Eliminación de Caries..., 2. Limpieza...\"\n- Ahora sabes que \"caries\" es el número 1 (puede haber cambiado!)\n- Llama CANCEL_BOOKING con bookingNumber: 1",
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        1328
+      ],
+      "id": "60cb151d-734d-4195-a636-619d1cf6c70b",
+      "name": "AGENTE SARA2",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        1728
+      ],
+      "id": "094bb167-46c3-4c1d-84b2-20442135dacf",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "description": "Busca las citas de un paciente por email. Devuelve una lista NUMERADA de citas activas (1, 2, 3...). Usa estos números cuando llames a RESCHEDULE_BOOKING o CANCEL_BOOKING.",
+        "jsCode": "// Handle query - could be object or string\nlet email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido. Necesito un email válido para buscar las citas.'\n  });\n}\n\n// Make API request to Cal.com using n8n's HTTP helper\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = data.data || [];\n\n// Filter only active bookings (status = 'accepted')\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: true,\n    found: false,\n    message: 'No hay citas activas para este email.',\n    bookings: []\n  });\n}\n\nconst formattedBookings = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  \n  // Parse the start time and convert to Madrid timezone\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish\n  const options = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', options);\n  \n  // Get service name from responses or title\n  const serviceName = booking.responses?.service || booking.title || 'Cita';\n  \n  // Build display string WITHOUT the UID\n  formattedBookings.push(`${num}. ${serviceName} - ${formattedDate}`);\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s) activa(s):`,\n  bookings: formattedBookings\n});",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        1728
+      ],
+      "id": "61a3ea97-aff6-4a73-89d1-cf2b2dff8d01",
+      "name": "GET_BOOKINGS1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        1728
+      ],
+      "id": "632cc303-28d5-4a33-9129-529c727414e3",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Finds available appointment slots for a given service and date range.",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2896,
+        3392
+      ],
+      "id": "6133c612-4aab-4c1a-8db8-2c340862801c",
+      "name": "CHECK FREE SLOTS"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n---\n\n## 🌍 MULTI-IDIOMA (CRÍTICO)\n\n**Detecta el idioma del PRIMER mensaje del usuario y responde SIEMPRE en ese idioma:**\n- Si escribe en español → responde en español\n- Si escribe en inglés → responde en inglés  \n- Si escribe en árabe → responde en árabe (العربية)\n- Si no está claro → usa español por defecto\n\n**Mantén el MISMO idioma durante toda la conversación** a menos que el usuario cambie.\n\n**Ejemplos de saludo inicial según idioma detectado:**\n- ES: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\"\n- EN: \"Hi, I'm Sara from Dr. Ilyass Clinic, how can I help you today?\"\n- AR: \"مرحباً، أنا سارة من عيادة الدكتور إلياس، كيف يمكنني مساعدتك اليوم؟\"\n\n---\n\n## 📸 ANÁLISIS DE IMÁGENES\n\n**Cuando el usuario envíe una imagen, analízala cuidadosamente:**\n\n### Si es una FOTO DE BOCA/DIENTES:\n- Describe lo que observas (sin diagnosticar)\n- Sugiere el servicio más apropiado\n- Ejemplo: \"Veo lo que parece ser una zona oscura en el molar. Esto podría requerir una revisión para Eliminación de Caries. ¿Te gustaría reservar una cita?\"\n\n### Si es una FACTURA/RECIBO de la clínica:\n- Extrae la información relevante (fecha, servicio, importe)\n- Pregunta en qué puedes ayudar\n- Ejemplo: \"Veo una factura del 15 de octubre por una Limpieza Dental (45€). ¿Tienes alguna pregunta sobre este cobro?\"\n\n### Si es un DOCUMENTO/RADIOGRAFÍA:\n- Describe lo que ves\n- Sugiere que el doctor lo revise en persona\n- Ofrece agendar cita\n\n### Si es OTRA IMAGEN:\n- Describe brevemente qué ves\n- Pregunta cómo puedes ayudar\n\n**⚠️ NUNCA des diagnósticos médicos definitivos. Solo sugiere servicios y recomienda visita profesional.**\n\n---\n\n## 🎯 SUGERENCIA INTELIGENTE DE SERVICIOS\n\n**Cuando el paciente describa síntomas, sugiere el servicio apropiado:**\n\n| Síntomas | Servicio Sugerido |\n|----------|-------------------|\n| Dolor de muela, zona negra, sensibilidad al frío/calor | Eliminación de Caries (50 min) |\n| Manchas, sarro, hace tiempo sin limpieza | Limpieza Dental (45 min) |\n| Blanqueamiento, carillas, mejorar sonrisa | Estética Dental (75 min) |\n| Revisión general, dudas, primera visita | Consulta General (30 min) |\n\n**Ejemplo de respuesta:**\n> \"Por lo que me cuentas sobre el dolor y la sensibilidad, parece que podrías necesitar una revisión para Eliminación de Caries. ¿Quieres que busque disponibilidad?\"\n\n---\n\n## 👤 Identidad\n\nSara, 25 años, recepcionista real (nunca IA). Profesional, cercana y empática. Maneja citas.\n\n**Comunicación:**\n- Tono natural y cálido en el idioma detectado\n- Una pregunta por mensaje (máx 3 frases)\n- Hasta 2 emojis por conversación\n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\")\n- Nunca menciones zonas horarias\n- NUNCA preguntes algo que ya sabes\n\n---\n\n## 🏥 Clínica\n\n- **Dirección:** Carrer Pere Andreu, 18, Valencia\n- **Google Maps:** https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia\n- **Horario:** Lunes a viernes 9:00–17:00\n- **Teléfono:** +34 631 975 901\n- **Cancelación:** gratis >48h, 10€ si <48h\n\n**Servicios (eventTypeId 3502752):**\n- Limpieza Dental — 45 min\n- Estética Dental — 75 min\n- Eliminación de Caries — 50 min\n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL:** {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}\n\n---\n\n## 📋 Datos del paciente\n\n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email\n- Si dan 9 dígitos, añade +34 automáticamente\n\n---\n\n## ✅ Confirmaciones\n\nSolo confirma ANTES de ejecutar acciones definitivas. Haz UNA confirmación final.\n\n---\n\n## 🔍 Buscar cita\n1️⃣ Pide email\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas activas numeradas\n4️⃣ Si no hay → ofrece crear una nueva\n\n---\n\n## 🕓 Comprobar disponibilidad\n1️⃣ Si dice \"cuanto antes\" → busca desde MAÑANA\n2️⃣ Llama CHECK FREE SLOTS\n3️⃣ Muestra máx. 3 huecos\n\n---\n\n## 📅 Crear cita\n1️⃣ Reúne nombre, email, teléfono, servicio, slot\n2️⃣ Confirma resumen completo\n3️⃣ Llama CREATE_BOOKING (incluye verificación de doble reserva)\n4️⃣ Si ya tiene cita ese día → pregunta si quiere añadir otra o cambiarla\n5️⃣ Verifica response → solo confirma si fue exitoso\n\n---\n\n## 🔁 Reprogramar\n1️⃣ Pide email si no lo tienes\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas numeradas\n4️⃣ ESPERA a que elija\n5️⃣ Pide nueva fecha/hora → CHECK FREE SLOTS\n6️⃣ Confirma resumen\n7️⃣ Llama GET_BOOKINGS OTRA VEZ (los números pueden cambiar)\n8️⃣ Llama RESCHEDULE_BOOKING con el número ACTUAL\n\n---\n\n## ❌ Cancelar\n1️⃣ Pide email si no lo tienes\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas numeradas\n4️⃣ ESPERA a que elija\n5️⃣ Pide motivo. Si <48h → avisa coste 10€\n6️⃣ Confirma resumen\n7️⃣ Llama GET_BOOKINGS OTRA VEZ\n8️⃣ Llama CANCEL_BOOKING con el número ACTUAL\n\n---\n\n## 🛠️ Herramientas\n\n- **CHECK FREE SLOTS** → busca huecos disponibles\n- **CREATE_BOOKING** → crea cita nueva (verifica doble reserva automáticamente)\n- **GET_BOOKINGS** → busca citas por email (lista numerada)\n- **RESCHEDULE_BOOKING** → reprograma (email, bookingNumber, newStartUtc)\n- **CANCEL_BOOKING** → cancela (email, bookingNumber, reason)\n\n---\n\n## ⚠️ Reglas clave\n\n- **IDIOMA:** Responde SIEMPRE en el idioma del usuario\n- **IMÁGENES:** Analiza y sugiere servicio apropiado, sin diagnosticar\n- **NÚMEROS:** Los números de citas pueden cambiar. SIEMPRE llama GET_BOOKINGS antes de RESCHEDULE o CANCEL\n- **DOBLE RESERVA:** CREATE_BOOKING verifica automáticamente. Si hay conflicto, pregunta al usuario\n- Nunca muestres horas UTC\n- Nunca confirmes si la API devolvió error",
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        2992
+      ],
+      "id": "eef21fb4-fe91-4887-a6e1-6b0f4056ec75",
+      "name": "AGENTE SARA",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2016,
+        3392
+      ],
+      "id": "e0d6a3fa-fc85-417c-8b36-57c8b71a8fd9",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Busca las citas de un paciente por email. Devuelve una lista NUMERADA de citas activas (1, 2, 3...). Usa estos números cuando llames a RESCHEDULE_BOOKING o CANCEL_BOOKING.",
+        "jsCode": "// Handle query - could be object or string\nlet email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido. Necesito un email válido para buscar las citas.'\n  });\n}\n\n// Make API request to Cal.com using n8n's HTTP helper\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = data.data || [];\n\n// Filter only active bookings (status = 'accepted')\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: true,\n    found: false,\n    message: 'No hay citas activas para este email.',\n    bookings: []\n  });\n}\n\nconst formattedBookings = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  \n  // Parse the start time and convert to Madrid timezone\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish\n  const options = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', options);\n  \n  // Get service name from responses or title\n  const serviceName = booking.responses?.service || booking.title || 'Cita';\n  \n  // Build display string WITHOUT the UID\n  formattedBookings.push(`${num}. ${serviceName} - ${formattedDate}`);\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s) activa(s):`,\n  bookings: formattedBookings\n});",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2192,
+        3392
+      ],
+      "id": "773c06b6-3214-4fff-8ddb-eac65c879cb7",
+      "name": "GET_BOOKINGS"
+    },
+    {
+      "parameters": {
+        "description": "Reprograma una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y newStartUtc (nueva hora en formato UTC como 2025-12-17T09:00:00Z).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y newStartUtc.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!newStartUtc) {\n  return JSON.stringify({\n    success: false,\n    error: 'Falta la nueva fecha/hora. Formato: 2025-12-17T09:00:00Z'\n  });\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now reschedule using the UID\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newStartUtc,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: ''\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita reprogramada correctamente.',\n    newStart: newStartUtc\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al reprogramar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"newStartUtc\": \"2025-12-17T09:00:00Z\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2368,
+        3392
+      ],
+      "id": "acc44cbc-884d-49bb-af34-b3796ffa59e9",
+      "name": "RESCHEDULE_BOOKING1"
+    },
+    {
+      "parameters": {
+        "description": "Cancela una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y reason (motivo de cancelación).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y reason.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!reason) {\n  reason = 'Cancelado por el paciente';\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now cancel using the UID\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita cancelada correctamente.',\n    reason: reason\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al cancelar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2544,
+        3392
+      ],
+      "id": "465b287d-dcf2-4ea2-9b8d-c73176fbd191",
+      "name": "CANCEL_BOOKING1"
+    },
+    {
+      "parameters": {
+        "description": "Crea una nueva cita. Verifica automáticamente si el paciente ya tiene cita ese día (prevención de doble reserva). Necesita: email, fullName, phone, service, startUtc, duration.",
+        "jsCode": "// Handle query\nlet email, fullName, phone, service, startUtc, duration;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  fullName = query.fullName;\n  phone = query.phone;\n  service = query.service;\n  startUtc = query.startUtc;\n  duration = query.duration;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    fullName = input.fullName;\n    phone = input.phone;\n    service = input.service;\n    startUtc = input.startUtc;\n    duration = input.duration;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido.'\n    });\n  }\n}\n\n// Validate required fields\nif (!email || !fullName || !phone || !service || !startUtc || !duration) {\n  return JSON.stringify({\n    success: false,\n    error: 'Faltan datos. Necesito: email, fullName, phone, service, startUtc, duration.'\n  });\n}\n\n// Extract the date from startUtc for double-booking check\nconst requestedDate = startUtc.split('T')[0];\n\n// Check for existing bookings on the same day (DOUBLE-BOOKING PREVENTION)\nconst checkUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet existingBookings;\ntry {\n  existingBookings = await this.helpers.httpRequest({\n    method: 'GET',\n    url: checkUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  // Continue anyway if check fails\n  existingBookings = { data: [] };\n}\n\nconst activeBookings = (existingBookings.data || []).filter(b => b.status === 'accepted');\n\n// Check if any booking is on the same day\nconst sameDayBooking = activeBookings.find(b => {\n  const bookingDate = b.start.split('T')[0];\n  return bookingDate === requestedDate;\n});\n\nif (sameDayBooking) {\n  const existingTime = new Date(sameDayBooking.start).toLocaleString('es-ES', {\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  });\n  const existingService = sameDayBooking.responses?.service || sameDayBooking.title || 'Cita';\n  \n  return JSON.stringify({\n    success: false,\n    doubleBooking: true,\n    message: `El paciente ya tiene una cita ese día: ${existingService} a las ${existingTime}. ¿Quiere añadir otra cita o cambiar la existente?`,\n    existingBooking: {\n      service: existingService,\n      time: existingTime\n    }\n  });\n}\n\n// No conflict - proceed to create booking\nconst createUrl = 'https://api.cal.com/v2/bookings';\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: createUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      eventTypeId: 3502752,\n      start: startUtc,\n      attendee: {\n        name: fullName,\n        email: email,\n        timeZone: 'Europe/Madrid',\n        phoneNumber: phone\n      },\n      lengthInMinutes: parseInt(duration, 10),\n      bookingFieldsResponses: {\n        service: service\n      }\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita creada correctamente.',\n    data: response\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al crear cita: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"fullName\": \"Maria Garcia\",\n  \"phone\": \"+34 631 975 901\",\n  \"service\": \"Limpieza Dental\",\n  \"startUtc\": \"2025-12-17T09:00:00Z\",\n  \"duration\": 45\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2720,
+        3392
+      ],
+      "id": "5db27a69-6d1f-4873-b913-42ee01248d64",
+      "name": "CREATE_BOOKING1"
+    },
+    {
+      "parameters": {
+        "content": "## WORKFLOW v5 - ENHANCED\n\n**Nuevas funcionalidades:**\n\n✅ **Multi-idioma:** ES, EN, AR\n✅ **Análisis de imágenes:** Fotos de boca, facturas, documentos\n✅ **Sugerencia de servicios:** Según síntomas descritos\n✅ **Prevención doble reserva:** Verifica antes de crear",
+        "height": 336,
+        "width": 544
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        3040
+      ],
+      "id": "dd8f19eb-8fcc-4231-b107-1439e799d3cb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v2/bookings",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"status\": [\"upcoming\"],\n  \"take\": 100,\n  \"afterStart\": \"{{$now.setZone('UTC').plus(1,'days') }}\",\n  \"beforeEnd\": \"{{$now.setZone('UTC').plus(40, 'hours')}}\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-08-13\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2000,
+        3744
+      ],
+      "id": "09f30650-c705-4ec1-b32f-d1627d248849",
+      "name": "FETCH ALL BOOKINGS",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the timestamp from \"EVERYDAY AT 8AM\" node and convert to UTC\nconst triggerData = $('EVERYDAY AT 8AM').first().json;\nconst triggerTimestamp = new Date(triggerData.timestamp);\n\n// Calculate the 24h-40h window from the trigger time\nconst window24h = new Date(triggerTimestamp.getTime() + (24 * 60 * 60 * 1000));\nconst window40h = new Date(triggerTimestamp.getTime() + (40 * 60 * 60 * 1000));\n\n// Get the bookings from the input\nconst inputData = $input.first().json;\nconst bookings = inputData.data || [];\nconst pagination = inputData.pagination || {};\n\n// Filter bookings:\n// 1. Status must be \"accepted\" (not cancelled)\n// 2. Start time must be between 24h and 40h from trigger\nconst filteredBookings = bookings.filter(booking => {\n  // Check status - only \"accepted\" can pass through\n  if (booking.status !== 'accepted') {\n    return false;\n  }\n  \n  // Parse the booking start time (already in UTC)\n  const bookingStart = new Date(booking.start);\n  \n  // Check if booking is within the 24h-40h window\n  return bookingStart >= window24h && bookingStart <= window40h;\n});\n\n// Build output array\nconst output = [];\n\n// First item: pagination and count (ALWAYS included)\noutput.push({\n  json: {\n    pagination: pagination,\n    filteredCount: filteredBookings.length\n  }\n});\n\n// If no bookings match, just return the first item with count\nif (filteredBookings.length === 0) {\n  return output;\n}\n\n// Following items: each booking without pagination\nfilteredBookings.forEach(booking => {\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish (Madrid timezone)\n  const dateOptions = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    year: 'numeric',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const timeOptions = {\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', dateOptions);\n  const formattedTime = startDate.toLocaleString('es-ES', timeOptions);\n  \n  // Get attendee info\n  const attendee = booking.attendees?.[0] || {};\n  const service = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  \n  output.push({\n    json: {\n      bookingId: booking.id,\n      bookingUid: booking.uid,\n      status: booking.status,\n      patientName: attendee.name || 'Paciente',\n      patientEmail: attendee.email || '',\n      patientPhone: attendee.phoneNumber || '',\n      service: service,\n      date: formattedDate,\n      time: formattedTime,\n      fullDateTime: `${formattedDate} a las ${formattedTime}`,\n      startUtc: booking.start,\n      endUtc: booking.end,\n      duration: booking.duration,\n      whatsappNumber: attendee.phoneNumber?.replace(/\\s+/g, '') || ''\n    }\n  });\n});\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        3744
+      ],
+      "id": "aea4d0b8-b3b2-467e-a1db-fe9cd242d2c0",
+      "name": "24H TRUE GUARDRAIL"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        3744
+      ],
+      "id": "5e4f92fd-5035-4ca2-8630-9483ad02c71d",
+      "name": "EVERYDAY AT 8AM",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2720,
+        3840
+      ],
+      "id": "a5f61cd2-f718-4ec5-a27e-aa0ee4a5b120",
+      "name": "NO APPOINTMENTS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all bookings from \"24H TRUE GUARDRAIL\", skipping the first item (pagination)\nconst bookings = $('24H TRUE GUARDRAIL').all().slice(1);\n\n// Clinic info\nconst clinicAddress = 'Carrer Pere Andreu, 18, Valencia';\nconst googleMapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst clinicPhone = '+34 631 975 901';\n\n// Process each booking and build messages\nreturn bookings.map(item => {\n  const data = item.json;\n  \n  const messageES = `🔔 *Recordatorio de Cita*\n\nHola ${data.patientName},\n\nTe recordamos que tienes una cita mañana:\n\n📋 *Servicio:* ${data.service}\n📅 *Fecha:* ${data.fullDateTime}\n📍 *Dirección:* ${clinicAddress}\n🗺️ *Google Maps:* ${googleMapsLink}\n📞 *Teléfono:* ${clinicPhone}\n\n⏰ Por favor, llega 5 minutos antes de tu cita.\n\n¿Necesitas cambiar o cancelar? Responde a este mensaje o llámanos.\n\n— Clínica Dr. Ilyass`;\n\n  const messageEN = `🔔 *Appointment Reminder*\n\nHi ${data.patientName},\n\nThis is a reminder of your appointment tomorrow:\n\n📋 *Service:* ${data.service}\n📅 *Date:* ${data.fullDateTime}\n📍 *Address:* ${clinicAddress}\n🗺️ *Google Maps:* ${googleMapsLink}\n📞 *Phone:* ${clinicPhone}\n\n⏰ Please arrive 5 minutes before your appointment.\n\nNeed to reschedule or cancel? Reply to this message or call us.\n\n— Dr. Ilyass Clinic`;\n\n  const messageAR = `🔔 *تذكير بالموعد*\n\nمرحباً ${data.patientName}،\n\nنذكرك بموعدك غداً:\n\n📋 *الخدمة:* ${data.service}\n📅 *التاريخ:* ${data.fullDateTime}\n📍 *العنوان:* ${clinicAddress}\n🗺️ *خرائط جوجل:* ${googleMapsLink}\n📞 *الهاتف:* ${clinicPhone}\n\n⏰ يرجى الحضور قبل 5 دقائق من موعدك.\n\nهل تحتاج إلى تغيير أو إلغاء؟ رد على هذه الرسالة أو اتصل بنا.\n\n— عيادة الدكتور إلياس`;\n\n  return {\n    json: {\n      ...data,\n      clinicAddress,\n      googleMapsLink,\n      clinicPhone,\n      messageES,\n      messageEN,\n      messageAR,\n      // Use Spanish as default\n      message: messageES\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2720,
+        3664
+      ],
+      "id": "5fd92785-c516-468a-80da-0f4bb3a32697",
+      "name": "BUILD REMINDER MESSAGE"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.patientEmail }}",
+        "subject": "=Recordatorio Cita para {{ $json.patientName }}",
+        "emailType": "text",
+        "message": "={{ $json.messageES }}",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2928,
+        3664
+      ],
+      "id": "641d57af-a26b-47c5-a9a6-823d678b3388",
+      "name": "SEND REMINDER MESSAGE",
+      "webhookId": "1d5eb29d-d88e-4007-b62d-d950df1f46c9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "z8xF5lOZvn2NjBvZ",
+          "name": "GMAIL - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "771a37bb-b968-42f0-ba33-daed7d2f8fb5",
+              "leftValue": "={{ $json.filteredCount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2432,
+        3744
+      ],
+      "id": "8807c132-1b4f-4cd4-b51c-9969facccbf2",
+      "name": "DO WE HAVE APPOINTMENTS?"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        3392
+      ],
+      "id": "38275565-ad7a-4bf8-a514-2bc585f52ad7",
+      "name": "GPT 4o MINI",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 💰 Monthly Cost Estimate (GPT-4o-mini)\n\n**Pricing:**\n\nInput: $0.15 / 1M tokens\nOutput: $0.60 / 1M tokens\n\n**Per conversation:** ~9,000 input + ~800 output tokens\n\n**Estimated costs:**\n\n- 5 conv/day → ~$0.27/month\n- 10 conv/day → ~$0.55/month\n- 20 conv/day → ~$1.10/month\n- 50 conv/day → ~$2.75/month\n- 100 conv/day → ~$5.50/month\n- 200 conv/day → ~$11.00/month\n- 500 conv/day → ~$27.50/month\n\n💡 GPT-4o would cost ~17x more",
+        "height": 464,
+        "width": 544,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3168,
+        3392
+      ],
+      "id": "740a1dd3-8bd3-4621-8e0b-a516281b3f2f",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {
+    "FETCH ALL BOOKINGS": [
+      {
+        "json": {
+          "status": "success",
+          "data": [
+            {
+              "id": 13803496,
+              "uid": "nznmjXokLWXtVP1BDJUfjp",
+              "title": "Consulta General - Mustapha Ennaji",
+              "description": "",
+              "hosts": [
+                {
+                  "id": 1799792,
+                  "name": "Ilyass Ennaji El Ghabi",
+                  "email": "ilyassennajielghabi@gmail.com",
+                  "username": "ilyass-ennaji-el-ghabi",
+                  "timeZone": "Europe/Madrid"
+                }
+              ],
+              "status": "accepted",
+              "cancellationReason": "",
+              "cancelledByEmail": "",
+              "reschedulingReason": "",
+              "rescheduledByEmail": "ilyassennajielghabi@gmail.com",
+              "rescheduledFromUid": "8YpGYv6EgXdYxSLoBQqFvg",
+              "start": "2025-12-16T08:30:00.000Z",
+              "end": "2025-12-16T09:15:00.000Z",
+              "duration": 45,
+              "eventTypeId": 3502752,
+              "eventType": {
+                "id": 3502752,
+                "slug": "n8n-appointments"
+              },
+              "meetingUrl": "attendeeInPerson",
+              "location": "attendeeInPerson",
+              "absentHost": false,
+              "createdAt": "2025-12-15T20:50:19.698Z",
+              "updatedAt": "2025-12-15T20:50:20.687Z",
+              "metadata": {},
+              "rating": null,
+              "icsUid": "8YpGYv6EgXdYxSLoBQqFvg@Cal.com",
+              "attendees": [
+                {
+                  "name": "Mustapha Ennaji",
+                  "email": "ilyass@gastrosomnis.es",
+                  "timeZone": "Europe/Madrid",
+                  "language": "en",
+                  "absent": false,
+                  "phoneNumber": "+34 842 904 923"
+                }
+              ],
+              "bookingFieldsResponses": {
+                "email": "ilyass@gastrosomnis.es",
+                "attendeePhoneNumber": "+34 842 904 923",
+                "name": "Mustapha Ennaji",
+                "service": "Consulta General",
+                "rescheduledReason": ""
+              }
+            }
+          ],
+          "pagination": {
+            "returnedItems": 1,
+            "totalItems": 1,
+            "itemsPerPage": 100,
+            "remainingItems": 0,
+            "currentPage": 1,
+            "totalPages": 1,
+            "hasNextPage": false,
+            "hasPreviousPage": false
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-11T15:46:18.689Z",
+      "createdAt": "2025-12-11T15:46:18.689Z",
+      "role": "workflow:owner",
+      "workflowId": "xCjnLJd2lUOf8DvL",
+      "projectId": "8dA9Em61CLw7Lgze"
+    }
+  ],
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Every Hour": {
+      "recurrenceRules": []
+    },
+    "node:EVERYDAY AT 8AM": {
+      "recurrenceRules": []
+    }
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-11T15:09:34.313Z",
+      "createdAt": "2025-12-11T15:09:34.313Z",
+      "id": "qXeon9T5ZTHVJuNt",
+      "name": "GENERAL"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-15T22:34:10.108Z",
+  "versionId": "89a0e9a5-6764-43ed-a31f-0395f574fc31"
+}
