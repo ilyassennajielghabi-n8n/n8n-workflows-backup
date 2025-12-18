@@ -1,0 +1,1887 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-17T15:49:16.210Z",
+    "createdAt": "2025-12-17T15:49:16.210Z",
+    "versionId": "9b050069-1d75-4b85-9ba5-e318bdc01e8a",
+    "workflowId": "JgSZVvcyCk1TxX4S",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "",
+          "height": 1044,
+          "width": 150,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          784,
+          432
+        ],
+        "id": "3657e28d-c7dc-466b-8bed-2f80ba0e9135",
+        "name": "Info"
+      },
+      {
+        "parameters": {
+          "content": "## 1️⃣ GET BOOKINGS",
+          "height": 80,
+          "width": 216,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          448
+        ],
+        "id": "0e81fe9b-1dc1-4546-b9b0-5db6ea6f51ae",
+        "name": "L1"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nconst phone = body?.phone;\n\nif (!phone) return [{ json: { success: false, speakableResponse: '¿Me das tu número de teléfono para buscar tus citas?' } }];\n\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst phoneDigits = formattedPhone.replace(/\\D/g, '');\nconst generatedEmail = `${phoneDigits}@clinicadrilyass.com`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({ method: 'GET', url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100&skip=0`, headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' }, json: true });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Ha habido un problema. ¿Puedes intentarlo de nuevo?' } }];\n}\n\nconst bookingsData = Array.isArray(data) ? data[0]?.data : data?.data;\nconst activeBookings = (bookingsData || []).filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) return [{ json: { success: true, found: false, speakableResponse: 'No tienes ninguna cita activa. ¿Te gustaría reservar una?' } }];\n\nconst speakableList = [];\nactiveBookings.forEach((b, i) => {\n  const d = new Date(b.start);\n  const date = d.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\n  const time = d.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  const svc = b.bookingFieldsResponses?.service || 'Cita';\n  const ord = i === 0 ? 'primera' : i === 1 ? 'segunda' : i === 2 ? 'tercera' : `número ${i+1}`;\n  speakableList.push(`La ${ord} es ${svc} el ${date} a las ${time}`);\n});\n\nconst resp = activeBookings.length === 1 ? `Tienes una cita. ${speakableList[0]}. ¿Qué quieres hacer?` : `Tienes ${activeBookings.length} citas. ${speakableList.join('. ')}. ¿Cuál quieres gestionar?`;\nreturn [{ json: { success: true, found: true, count: activeBookings.length, speakableResponse: resp } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          432
+        ],
+        "id": "c6e39290-cb98-49cf-9848-237de01b23e8",
+        "name": "Process 1"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1712,
+          432
+        ],
+        "id": "743b0281-75d8-4ea7-87f4-72563d4d0615",
+        "name": "Respond 1"
+      },
+      {
+        "parameters": {
+          "content": "## 2️⃣ CHECK AVAILABILITY",
+          "height": 50,
+          "width": 200,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          672
+        ],
+        "id": "20bfe101-92f9-4732-bbc0-7b943bd00ec9",
+        "name": "L2"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nconst dateInput = body?.date;\nconst service = body?.service || 'Consulta General';\nconst durations = { 'Limpieza Dental': 45, 'Estética Dental': 75, 'Eliminación de Caries': 50, 'Consulta General': 30 };\nconst duration = durations[service] || 30;\n\nif (!dateInput) return [{ json: { success: false, speakableResponse: '¿Para qué día te gustaría buscar disponibilidad?' } }];\n\nlet startDate = new Date(dateInput);\nlet endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 1);\nconst startStr = startDate.toISOString().split('T')[0];\nconst endStr = endDate.toISOString().split('T')[0];\n\nlet response;\ntry {\n  response = await this.helpers.httpRequest({ method: 'GET', url: `https://api.cal.com/v2/slots?eventTypeId=3502752&start=${startStr}&end=${endStr}&duration=${duration}&timeZone=Europe/Madrid&format=range`, headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-09-04' }, json: true });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Problema al buscar disponibilidad. ¿Puedes intentarlo de nuevo?' } }];\n}\n\nconst data = Array.isArray(response) ? response[0]?.data : response?.data;\nif (!data) return [{ json: { success: false, speakableResponse: 'No he podido obtener la disponibilidad.' } }];\n\nconst allSlots = [];\nfor (const dk in data) { if (Array.isArray(data[dk])) data[dk].forEach(s => { if (s.start) allSlots.push(s); }); }\n\nconst formattedDate = startDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\n\nif (allSlots.length === 0) return [{ json: { success: true, found: false, speakableResponse: `No hay huecos el ${formattedDate}. ¿Otro día?` } }];\n\nconst top = allSlots.slice(0, 3);\nconst speakable = top.map(s => `a las ${new Date(s.start).toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' })}`);\nconst slots = top.map((s, i) => ({ option: i+1, time: new Date(s.start).toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' }), dateTime: s.start }));\n\nconst resp = top.length === 1 ? `El ${formattedDate} tengo ${speakable[0]}. ¿Te viene bien?` : `El ${formattedDate} tengo ${speakable.slice(0,-1).join(', ')} y ${speakable.slice(-1)}. ¿Cuál prefieres?`;\nreturn [{ json: { success: true, found: true, count: top.length, date: formattedDate, slots, speakableResponse: resp } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          656
+        ],
+        "id": "7c24080b-1f2f-406f-a2ea-9824c5defcbf",
+        "name": "Process 2"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1712,
+          656
+        ],
+        "id": "73eb12ce-deb1-4f7b-806f-cee9a032e5e5",
+        "name": "Respond 2"
+      },
+      {
+        "parameters": {
+          "content": "## 3️⃣ CREATE BOOKING ⚡",
+          "height": 50,
+          "width": 200,
+          "color": 3
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          880
+        ],
+        "id": "7b82a335-58af-4326-9da8-0ba23dbc3525",
+        "name": "L3"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nconst fullName = body?.fullName;\nconst phone = body?.phone;\nconst service = body?.service || 'Consulta General';\nconst dateTime = body?.dateTime;\n\nconst durations = { 'Limpieza Dental': 45, 'Estética Dental': 75, 'Eliminación de Caries': 50, 'Consulta General': 30 };\nconst duration = durations[service] || 30;\n\nif (!fullName || !phone || !dateTime) {\n  const m = [];\n  if (!fullName) m.push('nombre');\n  if (!phone) m.push('teléfono');\n  if (!dateTime) m.push('fecha y hora');\n  return [{ json: { success: false, speakableResponse: `Me falta el ${m.join(' y el ')}. ¿Me lo puedes dar?` } }];\n}\n\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nconst phoneDigitsForEmail = formattedPhone.replace(/\\D/g, '').replace(/^34/, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst generatedEmail = `${phoneDigitsForEmail}@clinicadrilyass.com`;\n\nlet formattedDateTime = dateTime;\nif (dateTime.endsWith('Z')) {\n  const u = new Date(dateTime);\n  formattedDateTime = `${u.getUTCFullYear()}-${String(u.getUTCMonth() + 1).padStart(2, '0')}-${String(u.getUTCDate()).padStart(2, '0')}T${String(u.getUTCHours() + 1).padStart(2, '0')}:${String(u.getUTCMinutes()).padStart(2, '0')}:${String(u.getUTCSeconds()).padStart(2, '0')}.000+01:00`;\n}\n\n// Double booking check\nconst reqDate = dateTime.split('T')[0];\nlet existing;\ntry {\n  existing = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  existing = { data: [] };\n}\n\nconst bd = Array.isArray(existing) ? existing[0]?.data : existing?.data;\nconst active = (bd || []).filter(b => b.status === 'accepted');\nconst sameDay = active.find(b => b.start.split('T')[0] === reqDate);\n\nif (sameDay) {\n  const t = new Date(sameDay.start).toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  return [{ json: { success: false, speakableResponse: `Ya tienes cita a las ${t} ese día. ¿Añadir otra o cambiar?` } }];\n}\n\n// Create booking\nlet resp;\ntry {\n  resp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.cal.com/v2/bookings',\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: {\n      eventTypeId: 3502752,\n      start: formattedDateTime,\n      attendee: { name: fullName, email: generatedEmail, timeZone: 'Europe/Madrid', phoneNumber: formattedPhone },\n      lengthInMinutes: duration,\n      bookingFieldsResponses: { service }\n    },\n    json: true\n  });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Ese horario ya no está disponible. ¿Busco otro?' } }];\n}\n\nif (resp?.status === 'error' || resp?.error) {\n  return [{ json: { success: false, speakableResponse: 'Ese horario ya no está disponible. ¿Busco otro?' } }];\n}\n\n// Format response\nconst bookingDate = new Date(formattedDateTime);\nconst fDate = bookingDate.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\nconst fTime = bookingDate.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\nconst firstName = fullName.split(' ')[0];\n\nreturn [{\n  json: {\n    success: true,\n    speakableResponse: `Perfecto ${firstName}, tu cita de ${service} queda para el ${fDate} a las ${fTime}. Te envío confirmación. ¿Algo más?`,\n    telegram: {\n      bookingUid: resp?.data?.uid,\n      patientName: fullName,\n      service,\n      date: fDate,\n      time: fTime,\n      dateTimeRaw: formattedDateTime,\n      duration,\n      phone: formattedPhone,\n      clinicPhone: '+34 631 975 901',\n      clinicAddress: 'Carrer Pere Andreu 18, Valencia'\n    }\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          864
+        ],
+        "id": "cceb3bae-8e40-4c8f-9cf5-9f6ffb2620ad",
+        "name": "Process 3"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "c",
+                "leftValue": "={{ $json.success }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.1,
+        "position": [
+          1712,
+          864
+        ],
+        "id": "512896b4-203a-42e7-b142-3b0372246740",
+        "name": "OK? 3"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { success: true, speakableResponse: $json.speakableResponse } }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          416
+        ],
+        "id": "06907927-cbfe-4a80-a144-578672e9a307",
+        "name": "Respond 3 ⚡"
+      },
+      {
+        "parameters": {
+          "jsCode": "const t = $('Process 3').item.json.telegram;\nconst bookingUid = t.bookingUid;\n\nlet calendarLink = '';\n\nif (bookingUid) {\n  try {\n    const linksResponse = await this.helpers.httpRequest({\n      method: 'GET',\n      url: `https://api.cal.com/v2/bookings/${bookingUid}/calendar-links`,\n      headers: {\n        'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n        'cal-api-version': '2024-08-13'\n      },\n      json: true\n    });\n    const links = linksResponse?.data || [];\n    calendarLink = links.find(l => l.id === 'googleCalendar')?.link || '';\n  } catch (e) {}\n}\n\nif (!calendarLink) {\n  const startDateCal = new Date(t.dateTimeRaw);\n  const endDateCal = new Date(startDateCal.getTime() + t.duration * 60000);\n  const formatCalDate = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '');\n  calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Cita Clínica Dr. Ilyass: ' + t.service)}&dates=${formatCalDate(startDateCal)}/${formatCalDate(endDateCal)}&details=${encodeURIComponent('Servicio: ' + t.service + '\\nPaciente: ' + t.patientName)}&location=${encodeURIComponent(t.clinicAddress)}`;\n}\n\nconst mapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst confirmLink = `https://vmi2967140.contaboserver.net/webhook/confirm-booking?uid=${bookingUid}`;\n\nconst msg = `✅ *CITA RESERVADA*\n\n👤 *Paciente:* ${t.patientName}\n📱 *Teléfono:* ${t.phone}\n\n📋 *Servicio:* ${t.service}\n📅 *Fecha:* ${t.date}\n🕐 *Hora:* ${t.time}\n\n📍 *Dirección:*\n${t.clinicAddress}\n\n🗺️ [Ver en Google Maps](${mapsLink})\n📅 [Añadir a Google Calendar](${calendarLink})\n\n👉 [✅ CONFIRMAR MI CITA](${confirmLink})`;\n\nreturn [{ json: { msg } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          576
+        ],
+        "id": "d6644176-9664-4070-9945-b2b5912e3f6e",
+        "name": "Build TG 3"
+      },
+      {
+        "parameters": {
+          "chatId": "1558016712",
+          "text": "={{ $json.msg }}",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2176,
+          576
+        ],
+        "id": "ecead9b7-6a16-4c94-ac37-e56dd38f1006",
+        "name": "Telegram 3",
+        "webhookId": "805eb57d-8768-4465-a600-d3da6d8b493c",
+        "credentials": {
+          "telegramApi": {
+            "id": "ARMBK9GPeDjSYDIE",
+            "name": "Clínica Dr. Ilyass Bot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          736
+        ],
+        "id": "62910f55-6c18-4075-bddb-f1d25d82ed14",
+        "name": "Respond 3 Err"
+      },
+      {
+        "parameters": {
+          "content": "## 4️⃣ RESCHEDULE ⚡",
+          "height": 50,
+          "width": 200,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          1104
+        ],
+        "id": "5b61aab3-1fa3-4d0c-bd44-d51e4b9ee579",
+        "name": "L4"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nlet phone = body?.phone;\nlet bookingNumber = body?.bookingNumber;\nlet newDateTime = body?.newDateTime;\n\nif (!phone) return [{ json: { success: false, speakableResponse: '¿Me das tu teléfono?' } }];\nif (!bookingNumber) return [{ json: { success: false, speakableResponse: '¿Cuál cita quieres cambiar? ¿La primera, segunda?' } }];\nif (!newDateTime) return [{ json: { success: false, speakableResponse: '¿Para qué día y hora?' } }];\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\n\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nconst phoneDigitsForEmail = formattedPhone.replace(/\\D/g, '').replace(/^34/, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst generatedEmail = `${phoneDigitsForEmail}@clinicadrilyass.com`;\n\n// Get existing bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Problema al buscar. ¿Intentas de nuevo?' } }];\n}\n\nconst bd = Array.isArray(listData) ? listData[0]?.data : listData?.data;\nconst active = (bd || []).filter(b => b.status === 'accepted');\n\nif (active.length === 0) return [{ json: { success: false, speakableResponse: 'No tienes citas activas.' } }];\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return [{ json: { success: false, speakableResponse: `Solo tienes ${active.length} cita${active.length > 1 ? 's' : ''}. ¿Cuál?` } }];\n}\n\nconst sel = active[idx];\nconst uid = sel.uid;\nconst service = sel.bookingFieldsResponses?.service || 'cita';\nconst patientName = sel.attendees?.[0]?.name || 'Paciente';\nconst oldDateStr = new Date(sel.start).toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n\n// Format new datetime\nlet fdt = newDateTime;\nif (newDateTime.endsWith('Z')) {\n  const u = new Date(newDateTime);\n  fdt = `${u.getUTCFullYear()}-${String(u.getUTCMonth() + 1).padStart(2, '0')}-${String(u.getUTCDate()).padStart(2, '0')}T${String(u.getUTCHours() + 1).padStart(2, '0')}:${String(u.getUTCMinutes()).padStart(2, '0')}:${String(u.getUTCSeconds()).padStart(2, '0')}.000+01:00`;\n}\n\n// Reschedule booking\nlet rescheduleResp;\ntry {\n  rescheduleResp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/reschedule`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { start: fdt, rescheduledBy: 'ilyassennajielghabi@gmail.com', reschedulingReason: 'Paciente' },\n    json: true\n  });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'No pude cambiar. ¿Busco otra hora?' } }];\n}\n\n// Get new booking UID\nconst newBookingUid = rescheduleResp?.data?.uid || uid;\n\n// Format response\nconst durations = { 'Limpieza Dental': 45, 'Estética Dental': 75, 'Eliminación de Caries': 50, 'Consulta General': 30 };\nconst duration = durations[service] || 30;\n\nconst nd = new Date(fdt);\nconst newDateStr = nd.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\nconst newTimeStr = nd.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n\nreturn [{\n  json: {\n    success: true,\n    speakableResponse: `Listo, cambiada al ${newDateStr} a las ${newTimeStr}. Te envío confirmación. ¿Algo más?`,\n    telegram: {\n      bookingUid: newBookingUid,\n      patientName,\n      service,\n      oldDate: oldDateStr,\n      newDate: newDateStr,\n      newTime: newTimeStr,\n      dateTimeRaw: fdt,\n      duration,\n      phone: formattedPhone,\n      clinicPhone: '+34 631 975 901',\n      clinicAddress: 'Carrer Pere Andreu 18, Valencia'\n    }\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          1088
+        ],
+        "id": "a1de541b-e128-45b0-8f3a-eec3c6a0186d",
+        "name": "Process 4"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "c",
+                "leftValue": "={{ $json.success }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.1,
+        "position": [
+          1712,
+          1088
+        ],
+        "id": "e5458a81-b8c1-48d9-bd98-8884b294d0be",
+        "name": "OK? 4"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { success: true, speakableResponse: $json.speakableResponse } }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          912
+        ],
+        "id": "4edf71b7-fb5c-4e3c-a75f-7e2068d093ef",
+        "name": "Respond 4 ⚡"
+      },
+      {
+        "parameters": {
+          "jsCode": "const t = $('Process 4').item.json.telegram;\nconst bookingUid = t.bookingUid;\n\nlet calendarLink = '';\n\nif (bookingUid) {\n  try {\n    const linksResponse = await this.helpers.httpRequest({\n      method: 'GET',\n      url: `https://api.cal.com/v2/bookings/${bookingUid}/calendar-links`,\n      headers: {\n        'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n        'cal-api-version': '2024-08-13'\n      },\n      json: true\n    });\n    const links = linksResponse?.data || [];\n    calendarLink = links.find(l => l.id === 'googleCalendar')?.link || '';\n  } catch (e) {}\n}\n\nif (!calendarLink) {\n  const startDateCal = new Date(t.dateTimeRaw);\n  const endDateCal = new Date(startDateCal.getTime() + t.duration * 60000);\n  const formatCalDate = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '');\n  calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Cita Clínica Dr. Ilyass: ' + t.service)}&dates=${formatCalDate(startDateCal)}/${formatCalDate(endDateCal)}&details=${encodeURIComponent('Servicio: ' + t.service + '\\nPaciente: ' + t.patientName)}&location=${encodeURIComponent(t.clinicAddress)}`;\n}\n\nconst mapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst confirmLink = `https://vmi2967140.contaboserver.net/webhook/confirm-booking?uid=${bookingUid}`;\n\nconst msg = `🔄 *CITA MODIFICADA*\n\n👤 *Paciente:* ${t.patientName}\n📱 *Teléfono:* ${t.phone}\n\n❌ *Fecha anterior:* ${t.oldDate}\n\n✅ *NUEVA CITA:*\n📋 *Servicio:* ${t.service}\n📅 *Fecha:* ${t.newDate}\n🕐 *Hora:* ${t.newTime}\n\n📍 *Dirección:*\n${t.clinicAddress}\n\n🗺️ [Ver en Google Maps](${mapsLink})\n📅 [Añadir a Google Calendar](${calendarLink})\n\n👉 [✅ CONFIRMAR MI CITA](${confirmLink})`;\n\nreturn [{ json: { msg } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          1072
+        ],
+        "id": "8ae0c15b-92cb-4f33-ac35-9ce489a5a787",
+        "name": "Build TG 4"
+      },
+      {
+        "parameters": {
+          "chatId": "1558016712",
+          "text": "={{ $json.msg }}",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2176,
+          1072
+        ],
+        "id": "b1dc420b-041c-473a-b888-ad40bf347e3e",
+        "name": "Telegram 4",
+        "webhookId": "f39f6ba7-d2ec-4fbf-8dad-1b602e03c6e4",
+        "credentials": {
+          "telegramApi": {
+            "id": "ARMBK9GPeDjSYDIE",
+            "name": "Clínica Dr. Ilyass Bot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          1232
+        ],
+        "id": "ffce4b7b-2d21-4a45-ab44-c1905ffcfd94",
+        "name": "Respond 4 Err"
+      },
+      {
+        "parameters": {
+          "content": "## 5️⃣ CANCEL ⚡",
+          "height": 50,
+          "width": 200,
+          "color": 2
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          1328
+        ],
+        "id": "c91989f9-767c-4a5e-b4df-feddba3af86a",
+        "name": "L5"
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nlet phone = body?.phone, bookingNumber = body?.bookingNumber, reason = body?.reason || 'Cancelado';\n\nif (!phone) return [{ json: { success: false, speakableResponse: '¿Me das tu teléfono?' } }];\nif (!bookingNumber) return [{ json: { success: false, speakableResponse: '¿Cuál cita quieres cancelar?' } }];\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nconst phoneDigitsForEmail = formattedPhone.replace(/\\D/g, '').replace(/^34/, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst generatedEmail = `${phoneDigitsForEmail}@clinicadrilyass.com`;\n\nlet listData;\ntry { listData = await this.helpers.httpRequest({ method: 'GET', url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100`, headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' }, json: true }); } catch(e) { return [{ json: { success: false, speakableResponse: 'Problema. ¿Intentas de nuevo?' } }]; }\n\nconst bd = Array.isArray(listData) ? listData[0]?.data : listData?.data;\nconst active = (bd || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return [{ json: { success: false, speakableResponse: 'No tienes citas activas.' } }];\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) return [{ json: { success: false, speakableResponse: `Solo tienes ${active.length} cita${active.length > 1 ? 's' : ''}.` } }];\n\nconst sel = active[idx];\nconst uid = sel.uid;\nconst service = sel.bookingFieldsResponses?.service || 'cita';\nconst patientName = sel.attendees?.[0]?.name || 'Paciente';\nconst bookingDate = new Date(sel.start);\nconst hoursUntil = (bookingDate - new Date()) / 3600000;\nconst late = hoursUntil < 48;\nconst dateStr = bookingDate.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n\ntry { await this.helpers.httpRequest({ method: 'POST', url: `https://api.cal.com/v2/bookings/${uid}/cancel`, headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' }, body: { cancellationReason: reason }, json: true }); } catch(e) { return [{ json: { success: false, speakableResponse: 'No pude cancelar. ¿Intentas de nuevo?' } }]; }\n\nconst resp = late ? `Tu cita del ${dateStr} cancelada. Cargo de 10€ por menos de 48h. ¿Algo más?` : `Tu cita del ${dateStr} cancelada sin coste. ¿Algo más?`;\n\nreturn [{ json: { success: true, speakableResponse: resp, telegram: { patientName, service, date: dateStr, reason, phone: formattedPhone, late, clinicPhone: '+34 631 975 901' } } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          1312
+        ],
+        "id": "300e6cda-97bd-454d-a8a9-1797ccb535f8",
+        "name": "Process 5"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "c",
+                "leftValue": "={{ $json.success }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.1,
+        "position": [
+          1712,
+          1312
+        ],
+        "id": "19c88ef3-a43f-4a85-81ba-4f1d4dbe75c8",
+        "name": "OK? 5"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { success: true, speakableResponse: $json.speakableResponse } }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          1408
+        ],
+        "id": "7e506d65-2848-4f73-ae5d-15dff31c1887",
+        "name": "Respond 5 ⚡"
+      },
+      {
+        "parameters": {
+          "jsCode": "const t = $('Process 5').item.json.telegram;\n\nlet feeMessage = '';\nif (t.late) {\n  feeMessage = '\\n\\n⚠️ *Cargo:* 10€ (menos de 48h)';\n}\n\nconst msg = `❌ *CITA CANCELADA*\n\n👤 *Paciente:* ${t.patientName}\n📱 *Teléfono:* ${t.phone}\n\n📋 *Servicio:* ${t.service}\n📅 *Fecha:* ${t.date}\n📝 *Motivo:* ${t.reason}${feeMessage}`;\n\nreturn [{ json: { msg } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          1568
+        ],
+        "id": "03f0f957-5cb9-436b-a3c6-4aa7000f1a2b",
+        "name": "Build TG 5"
+      },
+      {
+        "parameters": {
+          "chatId": "1558016712",
+          "text": "={{ $json.msg }}",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2176,
+          1568
+        ],
+        "id": "f4e862ff-e90d-41e0-9079-1f3e9b5290ed",
+        "name": "Telegram 5",
+        "webhookId": "ce972db2-6b5c-41f3-9c76-37cd19c23a46",
+        "credentials": {
+          "telegramApi": {
+            "id": "ARMBK9GPeDjSYDIE",
+            "name": "Clínica Dr. Ilyass Bot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2000,
+          1728
+        ],
+        "id": "bb28dfcb-7162-4681-9922-d83af170b73f",
+        "name": "Respond 5 Err"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "get-bookings",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          432
+        ],
+        "id": "b62b6617-2271-4b32-8f29-0d6f59e959e5",
+        "name": "Webhook: GET_BOOKINGS",
+        "webhookId": "get-bookings-elevenlabs"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "check-availability",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          656
+        ],
+        "id": "8d348860-7948-4e8f-970f-4279b7aa17c0",
+        "name": "Webhook: CHECK_AVAILABILITY",
+        "webhookId": "check-availability-elevenlabs"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "create-booking",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          864
+        ],
+        "id": "c7018b3d-c0d7-417a-bad6-390c6f356f5a",
+        "name": "Webhook: CREATE_BOOKING",
+        "webhookId": "create-booking-elevenlabs"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "reschedule-booking",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          1088
+        ],
+        "id": "64867d8a-e479-4c7b-bd50-9cb071b06c42",
+        "name": "Webhook: RESCHEDULE_BOOKING",
+        "webhookId": "reschedule-booking-elevenlabs"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "cancel-booking",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          1312
+        ],
+        "id": "09664179-ccf4-48b5-9212-fea9ce84daad",
+        "name": "Webhook: CANCEL_BOOKING",
+        "webhookId": "cancel-booking-elevenlabs"
+      },
+      {
+        "parameters": {
+          "path": "confirm-booking",
+          "responseMode": "responseNode",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          1248,
+          224
+        ],
+        "id": "a301e8ba-583f-4a73-970f-efa2745b1a1c",
+        "name": "Webhook",
+        "webhookId": "bd4f4a0d-277c-4da4-8d2a-5b227ccc0c1b"
+      },
+      {
+        "parameters": {
+          "jsCode": "const bookingUid = $input.first().json.query.uid;\n\n// No UID = invalid link\nif (!bookingUid) {\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Error</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0;\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">❌</div><h1 style=\"color:#e74c3c;margin:0 0 10px;\">Ha habido un error</h1><p style=\"color:#666;margin:0;\">Enlace inválido.</p><p style=\"color:#666;margin-top:15px;\">Contacta: +34 631 975 901</p></div></body></html>'\n    }\n  }];\n}\n\n// First check booking status\nlet booking;\ntry {\n  booking = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings/${bookingUid}`,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (e) {\n  // Booking not found = error\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Error</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0;\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">❌</div><h1 style=\"color:#e74c3c;margin:0 0 10px;\">Ha habido un error</h1><p style=\"color:#666;margin:0;\">No se encontró la cita.</p><p style=\"color:#666;margin-top:15px;\">Contacta: +34 631 975 901</p></div></body></html>'\n    }\n  }];\n}\n\nconst status = booking?.data?.status;\n\n// Already confirmed\nif (status === 'accepted') {\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Cita Confirmada</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:linear-gradient(135deg,#0891b2,#06b6d4);\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">✅</div><h1 style=\"color:#0891b2;margin:0 0 10px;\">La cita ya está confirmada</h1><p style=\"color:#666;margin:0 0 20px;\">No necesitas hacer nada más. ¡Te esperamos!</p><p style=\"color:#666;margin:0;\">Te esperamos en:<br><strong>Carrer Pere Andreu 18, Valencia</strong></p><div style=\"margin-top:30px;padding-top:20px;border-top:1px solid #eee;color:#999;font-size:14px;\">Clínica Dr. Ilyass<br>+34 631 975 901</div></div></body></html>'\n    }\n  }];\n}\n\n// Try to confirm\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${bookingUid}/confirm`,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n\n  // Success = Todo perfecto\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Cita Confirmada</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:linear-gradient(135deg,#0891b2,#06b6d4);\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">✅</div><h1 style=\"color:#0891b2;margin:0 0 10px;\">¡Todo perfecto!</h1><p style=\"color:#666;margin:0 0 20px;\">Tu cita ha sido confirmada.</p><p style=\"color:#666;margin:0;\">Te esperamos en:<br><strong>Carrer Pere Andreu 18, Valencia</strong></p><div style=\"margin-top:30px;padding-top:20px;border-top:1px solid #eee;color:#999;font-size:14px;\">Clínica Dr. Ilyass<br>+34 631 975 901</div></div></body></html>'\n    }\n  }];\n\n} catch (e) {\n  // Error\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Error</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0;\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">❌</div><h1 style=\"color:#e74c3c;margin:0 0 10px;\">Ha habido un error</h1><p style=\"color:#666;margin:0 0 20px;\">No se pudo confirmar la cita.</p><p style=\"color:#666;margin:0;\">Contacta: +34 631 975 901</p></div></body></html>'\n    }\n  }];\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          224
+        ],
+        "id": "88f3cbdf-0e53-4dce-8994-76103495de5f",
+        "name": "Confirm Booking"
+      },
+      {
+        "parameters": {
+          "chatId": "1558016712",
+          "text": "={{ $json.text }}",
+          "additionalFields": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1712,
+          224
+        ],
+        "id": "e7945ff4-f02a-4b9d-baa1-e3a84dc67e98",
+        "name": "Send a text message",
+        "webhookId": "ea001164-f2cb-4178-b0d9-835ee46f0d3e",
+        "credentials": {
+          "telegramApi": {
+            "id": "ARMBK9GPeDjSYDIE",
+            "name": "Clínica Dr. Ilyass Bot"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "={{ $('Confirm Booking').item.json.html }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2000,
+          224
+        ],
+        "id": "b394206b-8f90-408f-8caf-ccc1aef92926",
+        "name": "Respond to Webhook",
+        "alwaysOutputData": true
+      }
+    ],
+    "connections": {
+      "Process 1": {
+        "main": [
+          [
+            {
+              "node": "Respond 1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process 2": {
+        "main": [
+          [
+            {
+              "node": "Respond 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process 3": {
+        "main": [
+          [
+            {
+              "node": "OK? 3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OK? 3": {
+        "main": [
+          [
+            {
+              "node": "Respond 3 ⚡",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Build TG 3",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond 3 Err",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build TG 3": {
+        "main": [
+          [
+            {
+              "node": "Telegram 3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process 4": {
+        "main": [
+          [
+            {
+              "node": "OK? 4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OK? 4": {
+        "main": [
+          [
+            {
+              "node": "Respond 4 ⚡",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Build TG 4",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond 4 Err",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build TG 4": {
+        "main": [
+          [
+            {
+              "node": "Telegram 4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process 5": {
+        "main": [
+          [
+            {
+              "node": "OK? 5",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OK? 5": {
+        "main": [
+          [
+            {
+              "node": "Respond 5 ⚡",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Build TG 5",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond 5 Err",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build TG 5": {
+        "main": [
+          [
+            {
+              "node": "Telegram 5",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook: GET_BOOKINGS": {
+        "main": [
+          [
+            {
+              "node": "Process 1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook: CHECK_AVAILABILITY": {
+        "main": [
+          [
+            {
+              "node": "Process 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook: CREATE_BOOKING": {
+        "main": [
+          [
+            {
+              "node": "Process 3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook: RESCHEDULE_BOOKING": {
+        "main": [
+          [
+            {
+              "node": "Process 4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook: CANCEL_BOOKING": {
+        "main": [
+          [
+            {
+              "node": "Process 5",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Confirm Booking",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Confirm Booking": {
+        "main": [
+          [
+            {
+              "node": "Send a text message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send a text message": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Owner ",
+    "name": null,
+    "description": null
+  },
+  "activeVersionId": "9b050069-1d75-4b85-9ba5-e318bdc01e8a",
+  "connections": {
+    "Process 1": {
+      "main": [
+        [
+          {
+            "node": "Respond 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process 2": {
+      "main": [
+        [
+          {
+            "node": "Respond 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process 3": {
+      "main": [
+        [
+          {
+            "node": "OK? 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OK? 3": {
+      "main": [
+        [
+          {
+            "node": "Respond 3 ⚡",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build TG 3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 3 Err",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build TG 3": {
+      "main": [
+        [
+          {
+            "node": "Telegram 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process 4": {
+      "main": [
+        [
+          {
+            "node": "OK? 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OK? 4": {
+      "main": [
+        [
+          {
+            "node": "Respond 4 ⚡",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build TG 4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 4 Err",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build TG 4": {
+      "main": [
+        [
+          {
+            "node": "Telegram 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process 5": {
+      "main": [
+        [
+          {
+            "node": "OK? 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OK? 5": {
+      "main": [
+        [
+          {
+            "node": "Respond 5 ⚡",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build TG 5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 5 Err",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build TG 5": {
+      "main": [
+        [
+          {
+            "node": "Telegram 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: GET_BOOKINGS": {
+      "main": [
+        [
+          {
+            "node": "Process 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: CHECK_AVAILABILITY": {
+      "main": [
+        [
+          {
+            "node": "Process 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: CREATE_BOOKING": {
+      "main": [
+        [
+          {
+            "node": "Process 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: RESCHEDULE_BOOKING": {
+      "main": [
+        [
+          {
+            "node": "Process 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: CANCEL_BOOKING": {
+      "main": [
+        [
+          {
+            "node": "Process 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Confirm Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm Booking": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-17T10:01:11.144Z",
+  "id": "JgSZVvcyCk1TxX4S",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Sara - Voice Agent Tools",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "",
+        "height": 1044,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        784,
+        432
+      ],
+      "id": "3657e28d-c7dc-466b-8bed-2f80ba0e9135",
+      "name": "Info"
+    },
+    {
+      "parameters": {
+        "content": "## 1️⃣ GET BOOKINGS",
+        "height": 80,
+        "width": 216,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        448
+      ],
+      "id": "0e81fe9b-1dc1-4546-b9b0-5db6ea6f51ae",
+      "name": "L1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst phone = body?.phone;\n\nif (!phone) return [{ json: { success: false, speakableResponse: '¿Me das tu número de teléfono para buscar tus citas?' } }];\n\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst phoneDigits = formattedPhone.replace(/\\D/g, '');\nconst generatedEmail = `${phoneDigits}@clinicadrilyass.com`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({ method: 'GET', url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100&skip=0`, headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' }, json: true });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Ha habido un problema. ¿Puedes intentarlo de nuevo?' } }];\n}\n\nconst bookingsData = Array.isArray(data) ? data[0]?.data : data?.data;\nconst activeBookings = (bookingsData || []).filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) return [{ json: { success: true, found: false, speakableResponse: 'No tienes ninguna cita activa. ¿Te gustaría reservar una?' } }];\n\nconst speakableList = [];\nactiveBookings.forEach((b, i) => {\n  const d = new Date(b.start);\n  const date = d.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\n  const time = d.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  const svc = b.bookingFieldsResponses?.service || 'Cita';\n  const ord = i === 0 ? 'primera' : i === 1 ? 'segunda' : i === 2 ? 'tercera' : `número ${i+1}`;\n  speakableList.push(`La ${ord} es ${svc} el ${date} a las ${time}`);\n});\n\nconst resp = activeBookings.length === 1 ? `Tienes una cita. ${speakableList[0]}. ¿Qué quieres hacer?` : `Tienes ${activeBookings.length} citas. ${speakableList.join('. ')}. ¿Cuál quieres gestionar?`;\nreturn [{ json: { success: true, found: true, count: activeBookings.length, speakableResponse: resp } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        432
+      ],
+      "id": "c6e39290-cb98-49cf-9848-237de01b23e8",
+      "name": "Process 1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        432
+      ],
+      "id": "743b0281-75d8-4ea7-87f4-72563d4d0615",
+      "name": "Respond 1"
+    },
+    {
+      "parameters": {
+        "content": "## 2️⃣ CHECK AVAILABILITY",
+        "height": 50,
+        "width": 200,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        672
+      ],
+      "id": "20bfe101-92f9-4732-bbc0-7b943bd00ec9",
+      "name": "L2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst dateInput = body?.date;\nconst service = body?.service || 'Consulta General';\nconst durations = { 'Limpieza Dental': 45, 'Estética Dental': 75, 'Eliminación de Caries': 50, 'Consulta General': 30 };\nconst duration = durations[service] || 30;\n\nif (!dateInput) return [{ json: { success: false, speakableResponse: '¿Para qué día te gustaría buscar disponibilidad?' } }];\n\nlet startDate = new Date(dateInput);\nlet endDate = new Date(startDate); endDate.setDate(endDate.getDate() + 1);\nconst startStr = startDate.toISOString().split('T')[0];\nconst endStr = endDate.toISOString().split('T')[0];\n\nlet response;\ntry {\n  response = await this.helpers.httpRequest({ method: 'GET', url: `https://api.cal.com/v2/slots?eventTypeId=3502752&start=${startStr}&end=${endStr}&duration=${duration}&timeZone=Europe/Madrid&format=range`, headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-09-04' }, json: true });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Problema al buscar disponibilidad. ¿Puedes intentarlo de nuevo?' } }];\n}\n\nconst data = Array.isArray(response) ? response[0]?.data : response?.data;\nif (!data) return [{ json: { success: false, speakableResponse: 'No he podido obtener la disponibilidad.' } }];\n\nconst allSlots = [];\nfor (const dk in data) { if (Array.isArray(data[dk])) data[dk].forEach(s => { if (s.start) allSlots.push(s); }); }\n\nconst formattedDate = startDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\n\nif (allSlots.length === 0) return [{ json: { success: true, found: false, speakableResponse: `No hay huecos el ${formattedDate}. ¿Otro día?` } }];\n\nconst top = allSlots.slice(0, 3);\nconst speakable = top.map(s => `a las ${new Date(s.start).toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' })}`);\nconst slots = top.map((s, i) => ({ option: i+1, time: new Date(s.start).toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' }), dateTime: s.start }));\n\nconst resp = top.length === 1 ? `El ${formattedDate} tengo ${speakable[0]}. ¿Te viene bien?` : `El ${formattedDate} tengo ${speakable.slice(0,-1).join(', ')} y ${speakable.slice(-1)}. ¿Cuál prefieres?`;\nreturn [{ json: { success: true, found: true, count: top.length, date: formattedDate, slots, speakableResponse: resp } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        656
+      ],
+      "id": "7c24080b-1f2f-406f-a2ea-9824c5defcbf",
+      "name": "Process 2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        656
+      ],
+      "id": "73eb12ce-deb1-4f7b-806f-cee9a032e5e5",
+      "name": "Respond 2"
+    },
+    {
+      "parameters": {
+        "content": "## 3️⃣ CREATE BOOKING ⚡",
+        "height": 50,
+        "width": 200,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        880
+      ],
+      "id": "7b82a335-58af-4326-9da8-0ba23dbc3525",
+      "name": "L3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst fullName = body?.fullName;\nconst phone = body?.phone;\nconst service = body?.service || 'Consulta General';\nconst dateTime = body?.dateTime;\n\nconst durations = { 'Limpieza Dental': 45, 'Estética Dental': 75, 'Eliminación de Caries': 50, 'Consulta General': 30 };\nconst duration = durations[service] || 30;\n\nif (!fullName || !phone || !dateTime) {\n  const m = [];\n  if (!fullName) m.push('nombre');\n  if (!phone) m.push('teléfono');\n  if (!dateTime) m.push('fecha y hora');\n  return [{ json: { success: false, speakableResponse: `Me falta el ${m.join(' y el ')}. ¿Me lo puedes dar?` } }];\n}\n\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nconst phoneDigitsForEmail = formattedPhone.replace(/\\D/g, '').replace(/^34/, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst generatedEmail = `${phoneDigitsForEmail}@clinicadrilyass.com`;\n\nlet formattedDateTime = dateTime;\nif (dateTime.endsWith('Z')) {\n  const u = new Date(dateTime);\n  formattedDateTime = `${u.getUTCFullYear()}-${String(u.getUTCMonth() + 1).padStart(2, '0')}-${String(u.getUTCDate()).padStart(2, '0')}T${String(u.getUTCHours() + 1).padStart(2, '0')}:${String(u.getUTCMinutes()).padStart(2, '0')}:${String(u.getUTCSeconds()).padStart(2, '0')}.000+01:00`;\n}\n\n// Double booking check\nconst reqDate = dateTime.split('T')[0];\nlet existing;\ntry {\n  existing = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  existing = { data: [] };\n}\n\nconst bd = Array.isArray(existing) ? existing[0]?.data : existing?.data;\nconst active = (bd || []).filter(b => b.status === 'accepted');\nconst sameDay = active.find(b => b.start.split('T')[0] === reqDate);\n\nif (sameDay) {\n  const t = new Date(sameDay.start).toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  return [{ json: { success: false, speakableResponse: `Ya tienes cita a las ${t} ese día. ¿Añadir otra o cambiar?` } }];\n}\n\n// Create booking\nlet resp;\ntry {\n  resp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.cal.com/v2/bookings',\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: {\n      eventTypeId: 3502752,\n      start: formattedDateTime,\n      attendee: { name: fullName, email: generatedEmail, timeZone: 'Europe/Madrid', phoneNumber: formattedPhone },\n      lengthInMinutes: duration,\n      bookingFieldsResponses: { service }\n    },\n    json: true\n  });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Ese horario ya no está disponible. ¿Busco otro?' } }];\n}\n\nif (resp?.status === 'error' || resp?.error) {\n  return [{ json: { success: false, speakableResponse: 'Ese horario ya no está disponible. ¿Busco otro?' } }];\n}\n\n// Format response\nconst bookingDate = new Date(formattedDateTime);\nconst fDate = bookingDate.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\nconst fTime = bookingDate.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\nconst firstName = fullName.split(' ')[0];\n\nreturn [{\n  json: {\n    success: true,\n    speakableResponse: `Perfecto ${firstName}, tu cita de ${service} queda para el ${fDate} a las ${fTime}. Te envío confirmación. ¿Algo más?`,\n    telegram: {\n      bookingUid: resp?.data?.uid,\n      patientName: fullName,\n      service,\n      date: fDate,\n      time: fTime,\n      dateTimeRaw: formattedDateTime,\n      duration,\n      phone: formattedPhone,\n      clinicPhone: '+34 631 975 901',\n      clinicAddress: 'Carrer Pere Andreu 18, Valencia'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        864
+      ],
+      "id": "cceb3bae-8e40-4c8f-9cf5-9f6ffb2620ad",
+      "name": "Process 3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        864
+      ],
+      "id": "512896b4-203a-42e7-b142-3b0372246740",
+      "name": "OK? 3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, speakableResponse: $json.speakableResponse } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        416
+      ],
+      "id": "06907927-cbfe-4a80-a144-578672e9a307",
+      "name": "Respond 3 ⚡"
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $('Process 3').item.json.telegram;\nconst bookingUid = t.bookingUid;\n\nlet calendarLink = '';\n\nif (bookingUid) {\n  try {\n    const linksResponse = await this.helpers.httpRequest({\n      method: 'GET',\n      url: `https://api.cal.com/v2/bookings/${bookingUid}/calendar-links`,\n      headers: {\n        'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n        'cal-api-version': '2024-08-13'\n      },\n      json: true\n    });\n    const links = linksResponse?.data || [];\n    calendarLink = links.find(l => l.id === 'googleCalendar')?.link || '';\n  } catch (e) {}\n}\n\nif (!calendarLink) {\n  const startDateCal = new Date(t.dateTimeRaw);\n  const endDateCal = new Date(startDateCal.getTime() + t.duration * 60000);\n  const formatCalDate = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '');\n  calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Cita Clínica Dr. Ilyass: ' + t.service)}&dates=${formatCalDate(startDateCal)}/${formatCalDate(endDateCal)}&details=${encodeURIComponent('Servicio: ' + t.service + '\\nPaciente: ' + t.patientName)}&location=${encodeURIComponent(t.clinicAddress)}`;\n}\n\nconst mapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst confirmLink = `https://vmi2967140.contaboserver.net/webhook/confirm-booking?uid=${bookingUid}`;\n\nconst msg = `✅ *CITA RESERVADA*\n\n👤 *Paciente:* ${t.patientName}\n📱 *Teléfono:* ${t.phone}\n\n📋 *Servicio:* ${t.service}\n📅 *Fecha:* ${t.date}\n🕐 *Hora:* ${t.time}\n\n📍 *Dirección:*\n${t.clinicAddress}\n\n🗺️ [Ver en Google Maps](${mapsLink})\n📅 [Añadir a Google Calendar](${calendarLink})\n\n👉 [✅ CONFIRMAR MI CITA](${confirmLink})`;\n\nreturn [{ json: { msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        576
+      ],
+      "id": "d6644176-9664-4070-9945-b2b5912e3f6e",
+      "name": "Build TG 3"
+    },
+    {
+      "parameters": {
+        "chatId": "1558016712",
+        "text": "={{ $json.msg }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2176,
+        576
+      ],
+      "id": "ecead9b7-6a16-4c94-ac37-e56dd38f1006",
+      "name": "Telegram 3",
+      "webhookId": "805eb57d-8768-4465-a600-d3da6d8b493c",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        736
+      ],
+      "id": "62910f55-6c18-4075-bddb-f1d25d82ed14",
+      "name": "Respond 3 Err"
+    },
+    {
+      "parameters": {
+        "content": "## 4️⃣ RESCHEDULE ⚡",
+        "height": 50,
+        "width": 200,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        1104
+      ],
+      "id": "5b61aab3-1fa3-4d0c-bd44-d51e4b9ee579",
+      "name": "L4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nlet phone = body?.phone;\nlet bookingNumber = body?.bookingNumber;\nlet newDateTime = body?.newDateTime;\n\nif (!phone) return [{ json: { success: false, speakableResponse: '¿Me das tu teléfono?' } }];\nif (!bookingNumber) return [{ json: { success: false, speakableResponse: '¿Cuál cita quieres cambiar? ¿La primera, segunda?' } }];\nif (!newDateTime) return [{ json: { success: false, speakableResponse: '¿Para qué día y hora?' } }];\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\n\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nconst phoneDigitsForEmail = formattedPhone.replace(/\\D/g, '').replace(/^34/, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst generatedEmail = `${phoneDigitsForEmail}@clinicadrilyass.com`;\n\n// Get existing bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'Problema al buscar. ¿Intentas de nuevo?' } }];\n}\n\nconst bd = Array.isArray(listData) ? listData[0]?.data : listData?.data;\nconst active = (bd || []).filter(b => b.status === 'accepted');\n\nif (active.length === 0) return [{ json: { success: false, speakableResponse: 'No tienes citas activas.' } }];\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return [{ json: { success: false, speakableResponse: `Solo tienes ${active.length} cita${active.length > 1 ? 's' : ''}. ¿Cuál?` } }];\n}\n\nconst sel = active[idx];\nconst uid = sel.uid;\nconst service = sel.bookingFieldsResponses?.service || 'cita';\nconst patientName = sel.attendees?.[0]?.name || 'Paciente';\nconst oldDateStr = new Date(sel.start).toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n\n// Format new datetime\nlet fdt = newDateTime;\nif (newDateTime.endsWith('Z')) {\n  const u = new Date(newDateTime);\n  fdt = `${u.getUTCFullYear()}-${String(u.getUTCMonth() + 1).padStart(2, '0')}-${String(u.getUTCDate()).padStart(2, '0')}T${String(u.getUTCHours() + 1).padStart(2, '0')}:${String(u.getUTCMinutes()).padStart(2, '0')}:${String(u.getUTCSeconds()).padStart(2, '0')}.000+01:00`;\n}\n\n// Reschedule booking\nlet rescheduleResp;\ntry {\n  rescheduleResp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/reschedule`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { start: fdt, rescheduledBy: 'ilyassennajielghabi@gmail.com', reschedulingReason: 'Paciente' },\n    json: true\n  });\n} catch (e) {\n  return [{ json: { success: false, speakableResponse: 'No pude cambiar. ¿Busco otra hora?' } }];\n}\n\n// Get new booking UID\nconst newBookingUid = rescheduleResp?.data?.uid || uid;\n\n// Format response\nconst durations = { 'Limpieza Dental': 45, 'Estética Dental': 75, 'Eliminación de Caries': 50, 'Consulta General': 30 };\nconst duration = durations[service] || 30;\n\nconst nd = new Date(fdt);\nconst newDateStr = nd.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' });\nconst newTimeStr = nd.toLocaleString('es-ES', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n\nreturn [{\n  json: {\n    success: true,\n    speakableResponse: `Listo, cambiada al ${newDateStr} a las ${newTimeStr}. Te envío confirmación. ¿Algo más?`,\n    telegram: {\n      bookingUid: newBookingUid,\n      patientName,\n      service,\n      oldDate: oldDateStr,\n      newDate: newDateStr,\n      newTime: newTimeStr,\n      dateTimeRaw: fdt,\n      duration,\n      phone: formattedPhone,\n      clinicPhone: '+34 631 975 901',\n      clinicAddress: 'Carrer Pere Andreu 18, Valencia'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        1088
+      ],
+      "id": "a1de541b-e128-45b0-8f3a-eec3c6a0186d",
+      "name": "Process 4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        1088
+      ],
+      "id": "e5458a81-b8c1-48d9-bd98-8884b294d0be",
+      "name": "OK? 4"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, speakableResponse: $json.speakableResponse } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        912
+      ],
+      "id": "4edf71b7-fb5c-4e3c-a75f-7e2068d093ef",
+      "name": "Respond 4 ⚡"
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $('Process 4').item.json.telegram;\nconst bookingUid = t.bookingUid;\n\nlet calendarLink = '';\n\nif (bookingUid) {\n  try {\n    const linksResponse = await this.helpers.httpRequest({\n      method: 'GET',\n      url: `https://api.cal.com/v2/bookings/${bookingUid}/calendar-links`,\n      headers: {\n        'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n        'cal-api-version': '2024-08-13'\n      },\n      json: true\n    });\n    const links = linksResponse?.data || [];\n    calendarLink = links.find(l => l.id === 'googleCalendar')?.link || '';\n  } catch (e) {}\n}\n\nif (!calendarLink) {\n  const startDateCal = new Date(t.dateTimeRaw);\n  const endDateCal = new Date(startDateCal.getTime() + t.duration * 60000);\n  const formatCalDate = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\\.\\d{3}/, '');\n  calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Cita Clínica Dr. Ilyass: ' + t.service)}&dates=${formatCalDate(startDateCal)}/${formatCalDate(endDateCal)}&details=${encodeURIComponent('Servicio: ' + t.service + '\\nPaciente: ' + t.patientName)}&location=${encodeURIComponent(t.clinicAddress)}`;\n}\n\nconst mapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst confirmLink = `https://vmi2967140.contaboserver.net/webhook/confirm-booking?uid=${bookingUid}`;\n\nconst msg = `🔄 *CITA MODIFICADA*\n\n👤 *Paciente:* ${t.patientName}\n📱 *Teléfono:* ${t.phone}\n\n❌ *Fecha anterior:* ${t.oldDate}\n\n✅ *NUEVA CITA:*\n📋 *Servicio:* ${t.service}\n📅 *Fecha:* ${t.newDate}\n🕐 *Hora:* ${t.newTime}\n\n📍 *Dirección:*\n${t.clinicAddress}\n\n🗺️ [Ver en Google Maps](${mapsLink})\n📅 [Añadir a Google Calendar](${calendarLink})\n\n👉 [✅ CONFIRMAR MI CITA](${confirmLink})`;\n\nreturn [{ json: { msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        1072
+      ],
+      "id": "8ae0c15b-92cb-4f33-ac35-9ce489a5a787",
+      "name": "Build TG 4"
+    },
+    {
+      "parameters": {
+        "chatId": "1558016712",
+        "text": "={{ $json.msg }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2176,
+        1072
+      ],
+      "id": "b1dc420b-041c-473a-b888-ad40bf347e3e",
+      "name": "Telegram 4",
+      "webhookId": "f39f6ba7-d2ec-4fbf-8dad-1b602e03c6e4",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        1232
+      ],
+      "id": "ffce4b7b-2d21-4a45-ab44-c1905ffcfd94",
+      "name": "Respond 4 Err"
+    },
+    {
+      "parameters": {
+        "content": "## 5️⃣ CANCEL ⚡",
+        "height": 50,
+        "width": 200,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        1328
+      ],
+      "id": "c91989f9-767c-4a5e-b4df-feddba3af86a",
+      "name": "L5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nlet phone = body?.phone, bookingNumber = body?.bookingNumber, reason = body?.reason || 'Cancelado';\n\nif (!phone) return [{ json: { success: false, speakableResponse: '¿Me das tu teléfono?' } }];\nif (!bookingNumber) return [{ json: { success: false, speakableResponse: '¿Cuál cita quieres cancelar?' } }];\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nconst phoneDigitsForEmail = formattedPhone.replace(/\\D/g, '').replace(/^34/, '');\nif (!formattedPhone.startsWith('+')) formattedPhone = '+34' + formattedPhone;\nconst generatedEmail = `${phoneDigitsForEmail}@clinicadrilyass.com`;\n\nlet listData;\ntry { listData = await this.helpers.httpRequest({ method: 'GET', url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(generatedEmail)}&take=100`, headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' }, json: true }); } catch(e) { return [{ json: { success: false, speakableResponse: 'Problema. ¿Intentas de nuevo?' } }]; }\n\nconst bd = Array.isArray(listData) ? listData[0]?.data : listData?.data;\nconst active = (bd || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return [{ json: { success: false, speakableResponse: 'No tienes citas activas.' } }];\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) return [{ json: { success: false, speakableResponse: `Solo tienes ${active.length} cita${active.length > 1 ? 's' : ''}.` } }];\n\nconst sel = active[idx];\nconst uid = sel.uid;\nconst service = sel.bookingFieldsResponses?.service || 'cita';\nconst patientName = sel.attendees?.[0]?.name || 'Paciente';\nconst bookingDate = new Date(sel.start);\nconst hoursUntil = (bookingDate - new Date()) / 3600000;\nconst late = hoursUntil < 48;\nconst dateStr = bookingDate.toLocaleString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Madrid' });\n\ntry { await this.helpers.httpRequest({ method: 'POST', url: `https://api.cal.com/v2/bookings/${uid}/cancel`, headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' }, body: { cancellationReason: reason }, json: true }); } catch(e) { return [{ json: { success: false, speakableResponse: 'No pude cancelar. ¿Intentas de nuevo?' } }]; }\n\nconst resp = late ? `Tu cita del ${dateStr} cancelada. Cargo de 10€ por menos de 48h. ¿Algo más?` : `Tu cita del ${dateStr} cancelada sin coste. ¿Algo más?`;\n\nreturn [{ json: { success: true, speakableResponse: resp, telegram: { patientName, service, date: dateStr, reason, phone: formattedPhone, late, clinicPhone: '+34 631 975 901' } } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        1312
+      ],
+      "id": "300e6cda-97bd-454d-a8a9-1797ccb535f8",
+      "name": "Process 5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        1312
+      ],
+      "id": "19c88ef3-a43f-4a85-81ba-4f1d4dbe75c8",
+      "name": "OK? 5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, speakableResponse: $json.speakableResponse } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        1408
+      ],
+      "id": "7e506d65-2848-4f73-ae5d-15dff31c1887",
+      "name": "Respond 5 ⚡"
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $('Process 5').item.json.telegram;\n\nlet feeMessage = '';\nif (t.late) {\n  feeMessage = '\\n\\n⚠️ *Cargo:* 10€ (menos de 48h)';\n}\n\nconst msg = `❌ *CITA CANCELADA*\n\n👤 *Paciente:* ${t.patientName}\n📱 *Teléfono:* ${t.phone}\n\n📋 *Servicio:* ${t.service}\n📅 *Fecha:* ${t.date}\n📝 *Motivo:* ${t.reason}${feeMessage}`;\n\nreturn [{ json: { msg } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        1568
+      ],
+      "id": "03f0f957-5cb9-436b-a3c6-4aa7000f1a2b",
+      "name": "Build TG 5"
+    },
+    {
+      "parameters": {
+        "chatId": "1558016712",
+        "text": "={{ $json.msg }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2176,
+        1568
+      ],
+      "id": "f4e862ff-e90d-41e0-9079-1f3e9b5290ed",
+      "name": "Telegram 5",
+      "webhookId": "ce972db2-6b5c-41f3-9c76-37cd19c23a46",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        1728
+      ],
+      "id": "bb28dfcb-7162-4681-9922-d83af170b73f",
+      "name": "Respond 5 Err"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "get-bookings",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        432
+      ],
+      "id": "b62b6617-2271-4b32-8f29-0d6f59e959e5",
+      "name": "Webhook: GET_BOOKINGS",
+      "webhookId": "get-bookings-elevenlabs"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-availability",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        656
+      ],
+      "id": "8d348860-7948-4e8f-970f-4279b7aa17c0",
+      "name": "Webhook: CHECK_AVAILABILITY",
+      "webhookId": "check-availability-elevenlabs"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "create-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        864
+      ],
+      "id": "c7018b3d-c0d7-417a-bad6-390c6f356f5a",
+      "name": "Webhook: CREATE_BOOKING",
+      "webhookId": "create-booking-elevenlabs"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reschedule-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        1088
+      ],
+      "id": "64867d8a-e479-4c7b-bd50-9cb071b06c42",
+      "name": "Webhook: RESCHEDULE_BOOKING",
+      "webhookId": "reschedule-booking-elevenlabs"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cancel-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        1312
+      ],
+      "id": "09664179-ccf4-48b5-9212-fea9ce84daad",
+      "name": "Webhook: CANCEL_BOOKING",
+      "webhookId": "cancel-booking-elevenlabs"
+    },
+    {
+      "parameters": {
+        "path": "confirm-booking",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1248,
+        224
+      ],
+      "id": "a301e8ba-583f-4a73-970f-efa2745b1a1c",
+      "name": "Webhook",
+      "webhookId": "bd4f4a0d-277c-4da4-8d2a-5b227ccc0c1b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const bookingUid = $input.first().json.query.uid;\n\n// No UID = invalid link\nif (!bookingUid) {\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Error</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0;\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">❌</div><h1 style=\"color:#e74c3c;margin:0 0 10px;\">Ha habido un error</h1><p style=\"color:#666;margin:0;\">Enlace inválido.</p><p style=\"color:#666;margin-top:15px;\">Contacta: +34 631 975 901</p></div></body></html>'\n    }\n  }];\n}\n\n// First check booking status\nlet booking;\ntry {\n  booking = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings/${bookingUid}`,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (e) {\n  // Booking not found = error\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Error</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0;\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">❌</div><h1 style=\"color:#e74c3c;margin:0 0 10px;\">Ha habido un error</h1><p style=\"color:#666;margin:0;\">No se encontró la cita.</p><p style=\"color:#666;margin-top:15px;\">Contacta: +34 631 975 901</p></div></body></html>'\n    }\n  }];\n}\n\nconst status = booking?.data?.status;\n\n// Already confirmed\nif (status === 'accepted') {\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Cita Confirmada</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:linear-gradient(135deg,#0891b2,#06b6d4);\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">✅</div><h1 style=\"color:#0891b2;margin:0 0 10px;\">La cita ya está confirmada</h1><p style=\"color:#666;margin:0 0 20px;\">No necesitas hacer nada más. ¡Te esperamos!</p><p style=\"color:#666;margin:0;\">Te esperamos en:<br><strong>Carrer Pere Andreu 18, Valencia</strong></p><div style=\"margin-top:30px;padding-top:20px;border-top:1px solid #eee;color:#999;font-size:14px;\">Clínica Dr. Ilyass<br>+34 631 975 901</div></div></body></html>'\n    }\n  }];\n}\n\n// Try to confirm\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${bookingUid}/confirm`,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n\n  // Success = Todo perfecto\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Cita Confirmada</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:linear-gradient(135deg,#0891b2,#06b6d4);\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">✅</div><h1 style=\"color:#0891b2;margin:0 0 10px;\">¡Todo perfecto!</h1><p style=\"color:#666;margin:0 0 20px;\">Tu cita ha sido confirmada.</p><p style=\"color:#666;margin:0;\">Te esperamos en:<br><strong>Carrer Pere Andreu 18, Valencia</strong></p><div style=\"margin-top:30px;padding-top:20px;border-top:1px solid #eee;color:#999;font-size:14px;\">Clínica Dr. Ilyass<br>+34 631 975 901</div></div></body></html>'\n    }\n  }];\n\n} catch (e) {\n  // Error\n  return [{\n    json: {\n      html: '<html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Error</title></head><body style=\"font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f0f0f0;\"><div style=\"background:white;padding:40px;border-radius:16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-width:350px;\"><div style=\"font-size:64px;margin-bottom:20px;\">❌</div><h1 style=\"color:#e74c3c;margin:0 0 10px;\">Ha habido un error</h1><p style=\"color:#666;margin:0 0 20px;\">No se pudo confirmar la cita.</p><p style=\"color:#666;margin:0;\">Contacta: +34 631 975 901</p></div></body></html>'\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        224
+      ],
+      "id": "88f3cbdf-0e53-4dce-8994-76103495de5f",
+      "name": "Confirm Booking"
+    },
+    {
+      "parameters": {
+        "chatId": "1558016712",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        224
+      ],
+      "id": "e7945ff4-f02a-4b9d-baa1-e3a84dc67e98",
+      "name": "Send a text message",
+      "webhookId": "ea001164-f2cb-4178-b0d9-835ee46f0d3e",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $('Confirm Booking').item.json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2000,
+        224
+      ],
+      "id": "b394206b-8f90-408f-8caf-ccc1aef92926",
+      "name": "Respond to Webhook",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {
+    "Webhook: CREATE_BOOKING": [
+      {
+        "json": {
+          "headers": {
+            "host": "vmi2967140.contaboserver.net",
+            "user-agent": "ElevenLabs/1.0",
+            "content-length": "147",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br",
+            "content-type": "application/json",
+            "via": "1.1 Caddy",
+            "x-forwarded-for": "34.59.11.47",
+            "x-forwarded-host": "vmi2967140.contaboserver.net",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "fullName": "José Luis Pérez Reverte",
+            "phone": "666999584",
+            "service": "Consulta General",
+            "dateTime": "2025-12-24T10:00:00.000+01:00"
+          },
+          "webhookUrl": "https://vmi2967140.contaboserver.net/webhook/create-booking",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-17T10:01:11.154Z",
+      "createdAt": "2025-12-17T10:01:11.154Z",
+      "role": "workflow:owner",
+      "workflowId": "JgSZVvcyCk1TxX4S",
+      "projectId": "8dA9Em61CLw7Lgze"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 6,
+  "updatedAt": "2025-12-17T15:49:16.208Z",
+  "versionId": "9b050069-1d75-4b85-9ba5-e318bdc01e8a"
+}
