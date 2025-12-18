@@ -1,454 +1,11 @@
 {
-  "active": true,
-  "activeVersion": {
-    "updatedAt": "2025-12-16T22:48:04.117Z",
-    "createdAt": "2025-12-16T22:48:04.117Z",
-    "versionId": "bf6963a3-c5fc-4857-9280-b4ef57b0b00d",
-    "workflowId": "rwvvzPSwysXvpq9Q",
-    "nodes": [
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "get-bookings",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          -48,
-          256
-        ],
-        "id": "7ad9ed07-937c-442e-8b65-d9d3b3211bce",
-        "name": "Webhook: GET_BOOKINGS",
-        "webhookId": "get-bookings-elevenlabs"
-      },
-      {
-        "parameters": {
-          "jsCode": "// ===========================================\n// GET_BOOKINGS - Fetch patient appointments\n// ===========================================\n// This webhook receives an email from ElevenLabs\n// and returns a SPEAKABLE list of appointments\n// ===========================================\n\n// Get the email from ElevenLabs request\nconst body = $input.first().json.body;\nconst email = body?.email;\n\n// Validate email\nif (!email || !email.includes('@')) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'No he entendido bien el email. ¿Me lo puedes repetir?'\n    }\n  }];\n}\n\n// Call Cal.com API to get bookings\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Perdona, ha habido un problema al buscar las citas. ¿Puedes intentarlo de nuevo?'\n    }\n  }];\n}\n\nconst bookings = data.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\n// No bookings found\nif (activeBookings.length === 0) {\n  return [{\n    json: {\n      success: true,\n      found: false,\n      count: 0,\n      speakableResponse: 'No tienes ninguna cita activa. ¿Te gustaría reservar una nueva?'\n    }\n  }];\n}\n\n// Format bookings for VOICE (speakable format)\nconst speakableList = [];\nconst bookingDetails = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  const startDate = new Date(booking.start);\n  \n  // Format date in a SPEAKABLE way\n  const dateOptions = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const timeOptions = {\n    hour: 'numeric',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', dateOptions);\n  const formattedTime = startDate.toLocaleString('es-ES', timeOptions);\n  \n  const service = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  \n  // Speakable format: \"La primera es una Limpieza Dental el martes 17 de diciembre a las 10\"\n  const ordinal = num === 1 ? 'primera' : num === 2 ? 'segunda' : num === 3 ? 'tercera' : `número ${num}`;\n  speakableList.push(`La ${ordinal} es ${service} el ${formattedDate} a las ${formattedTime}`);\n  \n  // Also store structured data for reference\n  bookingDetails.push({\n    number: num,\n    service: service,\n    date: formattedDate,\n    time: formattedTime,\n    bookingId: booking.id,\n    uid: booking.uid\n  });\n});\n\n// Build the full speakable response\nlet speakableResponse;\nif (activeBookings.length === 1) {\n  speakableResponse = `Tienes una cita. ${speakableList[0]}. ¿Qué te gustaría hacer?`;\n} else {\n  speakableResponse = `Tienes ${activeBookings.length} citas. ${speakableList.join('. ')}. ¿Cuál quieres gestionar?`;\n}\n\nreturn [{\n  json: {\n    success: true,\n    found: true,\n    count: activeBookings.length,\n    bookings: bookingDetails,\n    speakableResponse: speakableResponse\n  }\n}];"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          176,
-          256
-        ],
-        "id": "068333e0-38ac-40a2-8a9e-4eaad042c06a",
-        "name": "Process & Call Cal.com"
-      },
-      {
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ $json }}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          400,
-          256
-        ],
-        "id": "7b64449a-7daa-4813-8d9f-6aa4373c3c14",
-        "name": "Respond to ElevenLabs"
-      },
-      {
-        "parameters": {
-          "content": "## GET_BOOKINGS Webhook\n\n**URL:** POST /webhook/get-bookings\n\n**Input from ElevenLabs:**\n```json\n{ \"email\": \"patient@email.com\" }\n```\n\n**Output to ElevenLabs:**\n```json\n{\n  \"success\": true,\n  \"count\": 2,\n  \"speakableResponse\": \"Tienes 2 citas. La primera es...\"\n}\n```\n\n**Key:** Returns SPEAKABLE text, not technical data!",
-          "height": 448,
-          "width": 832
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          -160,
-          -256
-        ],
-        "id": "8a6e07a3-7500-478b-99b2-1475127130ac",
-        "name": "Instructions"
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "check-availability",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          -48,
-          432
-        ],
-        "id": "f89eb4c3-1fdc-4d78-9906-fb77ff110022",
-        "name": "Webhook: CHECK_AVAILABILITY",
-        "webhookId": "check-availability-elevenlabs"
-      },
-      {
-        "parameters": {
-          "jsCode": "// ===========================================\n// CHECK_AVAILABILITY - Find available slots\n// ===========================================\n\n// Get parameters from ElevenLabs request\nconst body = $input.first().json.body;\nconst dateInput = body?.date;\nconst service = body?.service || 'Consulta General';\n\n// Map service to duration\nconst serviceDurations = {\n  'Limpieza Dental': 45,\n  'Estética Dental': 75,\n  'Eliminación de Caries': 50,\n  'Consulta General': 30\n};\n\nconst duration = serviceDurations[service] || 30;\n\n// Validate date\nif (!dateInput) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: '¿Para qué día te gustaría buscar disponibilidad?'\n    }\n  }];\n}\n\n// Parse the date and calculate end date\nlet startDate, endDate;\ntry {\n  startDate = new Date(dateInput);\n  endDate = new Date(startDate);\n  endDate.setDate(endDate.getDate() + 1);\n} catch (e) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'No he entendido la fecha. ¿Me la puedes decir de otra forma?'\n    }\n  }];\n}\n\nconst startStr = startDate.toISOString().split('T')[0];\nconst endStr = endDate.toISOString().split('T')[0];\n\n// Call Cal.com API\nconst url = `https://api.cal.com/v2/slots?eventTypeId=3502752&start=${startStr}&end=${endStr}&duration=${duration}&timeZone=Europe/Madrid&format=range`;\n\nlet response;\ntry {\n  response = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-09-04'\n    },\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Perdona, ha habido un problema al buscar disponibilidad. ¿Puedes intentarlo de nuevo?'\n    }\n  }];\n}\n\n// Response is array: [{ data: { \"2025-12-19\": [...] }, status: \"success\" }]\nconst data = Array.isArray(response) ? response[0]?.data : response?.data;\n\nif (!data) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'No he podido obtener la disponibilidad. ¿Puedes intentarlo de nuevo?'\n    }\n  }];\n}\n\n// Flatten slots from all dates\nconst allSlots = [];\n\nfor (const dateKey in data) {\n  const daySlots = data[dateKey];\n  \n  if (Array.isArray(daySlots)) {\n    daySlots.forEach(slot => {\n      if (slot.start) {\n        allSlots.push({\n          start: slot.start,  // EXACT format from Cal.com: \"2025-12-19T09:00:00.000+01:00\"\n          end: slot.end\n        });\n      }\n    });\n  }\n}\n\n// Format date for response\nconst dateOptions = { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Madrid' };\nconst formattedDate = startDate.toLocaleDateString('es-ES', dateOptions);\n\n// No slots available\nif (allSlots.length === 0) {\n  return [{\n    json: {\n      success: true,\n      found: false,\n      count: 0,\n      speakableResponse: `Lo siento, no hay huecos disponibles el ${formattedDate}. ¿Quieres que busque en otro día?`\n    }\n  }];\n}\n\n// Take only first 3 slots\nconst topSlots = allSlots.slice(0, 3);\n\n// Format slots for voice AND include exact dateTime for booking\nconst speakableSlots = [];\nconst slotDetails = [];\n\ntopSlots.forEach((slot, index) => {\n  const slotDate = new Date(slot.start);\n  \n  const timeOptions = {\n    hour: 'numeric',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedTime = slotDate.toLocaleString('es-ES', timeOptions);\n  \n  speakableSlots.push(`a las ${formattedTime}`);\n  \n  slotDetails.push({\n    option: index + 1,\n    time: formattedTime,      // \"9:00\" - for Sara to speak\n    dateTime: slot.start      // \"2025-12-19T09:00:00.000+01:00\" - EXACT from Cal.com, use this in create_booking\n  });\n});\n\n// Build speakable response\nlet speakableResponse;\nif (topSlots.length === 1) {\n  speakableResponse = `El ${formattedDate} tengo disponible ${speakableSlots[0]}. ¿Te viene bien?`;\n} else {\n  const lastSlot = speakableSlots.pop();\n  speakableResponse = `El ${formattedDate} tengo disponible ${speakableSlots.join(', ')} y ${lastSlot}. ¿Cuál prefieres?`;\n}\n\nreturn [{\n  json: {\n    success: true,\n    found: true,\n    count: topSlots.length,\n    date: formattedDate,\n    service: service,\n    duration: duration,\n    slots: slotDetails,\n    speakableResponse: speakableResponse,\n    instructions: \"IMPORTANTE: Para create_booking, usa el valor EXACTO del campo 'dateTime' del slot elegido. NO lo conviertas a UTC ni le añadas 'Z'.\"\n  }\n}];"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          176,
-          432
-        ],
-        "id": "e793ee57-a763-43a6-86cf-e92faf4ee5ed",
-        "name": "Process & Call Cal.com1"
-      },
-      {
-        "parameters": {
-          "respondWith": "text",
-          "responseBody": "={{ $json.speakableResponse }}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          400,
-          432
-        ],
-        "id": "bcd26a83-16c9-481b-8633-471eb2a3075c",
-        "name": "Respond to ElevenLabs1"
-      },
-      {
-        "parameters": {
-          "content": "## CHECK_AVAILABILITY Webhook\n\n**URL:** POST /webhook/check-availability\n\n**Input from ElevenLabs:**\n```json\n{\n  \"date\": \"2025-12-17\",\n  \"service\": \"Limpieza Dental\"\n}\n```\n\n**Output to ElevenLabs:**\n```json\n{\n  \"success\": true,\n  \"speakableResponse\": \"El martes 17 tengo disponible a las 9, a las 10 y a las 11. ¿Cuál prefieres?\"\n}\n```\n\n**Key:** Returns max 3 slots in speakable format!",
-          "height": 448,
-          "width": 992
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          688,
-          -256
-        ],
-        "id": "84ebb0aa-f46f-4179-8155-ff1504a291a5",
-        "name": "Instructions1"
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "create-booking",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          -48,
-          624
-        ],
-        "id": "c9649172-7820-4e2b-9cf7-f1aaed94e1ec",
-        "name": "Webhook: CREATE_BOOKING",
-        "webhookId": "create-booking-elevenlabs"
-      },
-      {
-        "parameters": {
-          "jsCode": "// ===========================================\n// CREATE_BOOKING - Create new appointment\n// ===========================================\n\n// Get parameters from ElevenLabs request\nconst body = $input.first().json.body;\nconst email = body?.email;\nconst fullName = body?.fullName;\nconst phone = body?.phone;\nconst service = body?.service || 'Consulta General';\nconst dateTime = body?.dateTime;  // Should be EXACT from check_availability: \"2025-12-19T09:00:00.000+01:00\"\n\n// Map service to duration\nconst serviceDurations = {\n  'Limpieza Dental': 45,\n  'Estética Dental': 75,\n  'Eliminación de Caries': 50,\n  'Consulta General': 30\n};\n\nconst duration = serviceDurations[service] || 30;\n\n// Validate required fields\nif (!email || !fullName || !phone || !dateTime) {\n  const missing = [];\n  if (!email) missing.push('email');\n  if (!fullName) missing.push('nombre');\n  if (!phone) missing.push('teléfono');\n  if (!dateTime) missing.push('fecha y hora');\n  \n  return [{\n    json: {\n      success: false,\n      speakableResponse: `Me falta el ${missing.join(' y el ')}. ¿Me lo puedes dar?`\n    }\n  }];\n}\n\n// Format phone number (add +34 if needed)\nlet formattedPhone = phone.toString().replace(/\\s+/g, '');\nif (!formattedPhone.startsWith('+')) {\n  formattedPhone = '+34' + formattedPhone;\n}\n\n// Use dateTime EXACTLY as received - should already be in correct format from check_availability\n// If agent mistakenly sends UTC (Z), convert to Madrid time\nlet formattedDateTime = dateTime;\n\nif (dateTime.endsWith('Z')) {\n  // Agent sent UTC format - convert to Madrid local time (+01:00)\n  const utcDate = new Date(dateTime);\n  const year = utcDate.getUTCFullYear();\n  const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');\n  const day = String(utcDate.getUTCDate()).padStart(2, '0');\n  const hours = String(utcDate.getUTCHours() + 1).padStart(2, '0'); // Add 1 hour for Madrid winter time\n  const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');\n  const seconds = String(utcDate.getUTCSeconds()).padStart(2, '0');\n  formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000+01:00`;\n}\n\n// ==========================================\n// DOUBLE-BOOKING PREVENTION\n// ==========================================\nconst requestedDate = dateTime.split('T')[0];\nconst checkUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet existingBookings;\ntry {\n  existingBookings = await this.helpers.httpRequest({\n    method: 'GET',\n    url: checkUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  existingBookings = { data: [] };\n}\n\nconst bookingsData = Array.isArray(existingBookings) ? existingBookings[0]?.data : existingBookings?.data;\nconst activeBookings = (bookingsData || []).filter(b => b.status === 'accepted');\n\n// Check if any booking is on the same day\nconst sameDayBooking = activeBookings.find(b => {\n  const bookingDate = b.start.split('T')[0];\n  return bookingDate === requestedDate;\n});\n\nif (sameDayBooking) {\n  const existingTime = new Date(sameDayBooking.start).toLocaleString('es-ES', {\n    hour: 'numeric',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  });\n  const existingService = sameDayBooking.bookingFieldsResponses?.service || sameDayBooking.title || 'cita';\n  \n  return [{\n    json: {\n      success: false,\n      doubleBooking: true,\n      speakableResponse: `Ya tienes una cita de ${existingService} a las ${existingTime} ese mismo día. ¿Quieres añadir otra cita o prefieres cambiar la que ya tienes?`\n    }\n  }];\n}\n\n// ==========================================\n// CREATE THE BOOKING\n// ==========================================\nconst createUrl = 'https://api.cal.com/v2/bookings';\n\nconst requestBody = {\n  eventTypeId: 3502752,\n  start: formattedDateTime,\n  attendee: {\n    name: fullName,\n    email: email,\n    timeZone: 'Europe/Madrid',\n    phoneNumber: formattedPhone\n  },\n  lengthInMinutes: duration,\n  bookingFieldsResponses: {\n    service: service\n  }\n};\n\nlet response;\ntry {\n  response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: createUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: requestBody,\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Lo siento, ese horario ya no está disponible. ¿Quieres que busque otro?',\n      debug: {\n        error: error.message,\n        requestBody: requestBody\n      }\n    }\n  }];\n}\n\n// Check if response indicates an error\nif (response?.status === 'error' || response?.error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Lo siento, ese horario ya no está disponible. ¿Quieres que busque otro?',\n      debug: {\n        response: response,\n        requestBody: requestBody\n      }\n    }\n  }];\n}\n\n// Format confirmation for voice (use Madrid timezone for speaking)\nconst bookingDate = new Date(formattedDateTime);\nconst dateOptions = {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  timeZone: 'Europe/Madrid'\n};\nconst timeOptions = {\n  hour: 'numeric',\n  minute: '2-digit',\n  timeZone: 'Europe/Madrid'\n};\n\nconst formattedDate = bookingDate.toLocaleString('es-ES', dateOptions);\nconst formattedTime = bookingDate.toLocaleString('es-ES', timeOptions);\nconst firstName = fullName.split(' ')[0];\n\nreturn [{\n  json: {\n    success: true,\n    speakableResponse: `Perfecto ${firstName}, tu cita de ${service} queda reservada para el ${formattedDate} a las ${formattedTime}. Te enviaremos un recordatorio por email. ¿Hay algo más en lo que pueda ayudarte?`,\n    booking: {\n      service: service,\n      date: formattedDate,\n      time: formattedTime,\n      patient: fullName,\n      email: email,\n      phone: formattedPhone\n    }\n  }\n}]"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          176,
-          624
-        ],
-        "id": "4658c400-c879-4934-9888-1c3ac44a1258",
-        "name": "Process & Call Cal.com2"
-      },
-      {
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ $json }}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          400,
-          624
-        ],
-        "id": "5bf416ef-45e0-46da-afd1-d5fabeb35ffa",
-        "name": "Respond to ElevenLabs2"
-      },
-      {
-        "parameters": {
-          "content": "## CREATE_BOOKING Webhook\n\n**URL:** POST /webhook/create-booking\n\n**Input from ElevenLabs:**\n```json\n{\n  \"email\": \"maria@email.com\",\n  \"fullName\": \"María García\",\n  \"phone\": \"631975901\",\n  \"service\": \"Limpieza Dental\",\n  \"dateTime\": \"2025-12-17T09:00:00Z\"\n}\n```\n\n**Features:**\n- ✅ Double-booking prevention\n- ✅ Auto-formats phone (+34)\n- ✅ Returns speakable confirmation\n\n**Output:**\n```json\n{\n  \"success\": true,\n  \"speakableResponse\": \"Perfecto María, tu cita queda reservada...\"\n}\n```",
-          "height": 576,
-          "width": 672
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          1696,
-          -256
-        ],
-        "id": "dd5210a7-643a-4740-9aeb-2e9c0da5b6fc",
-        "name": "Instructions2"
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "reschedule-booking",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          -48,
-          800
-        ],
-        "id": "bcbcb133-eb30-4a39-ba62-c705c07085ad",
-        "name": "Webhook: RESCHEDULE_BOOKING",
-        "webhookId": "reschedule-booking-elevenlabs"
-      },
-      {
-        "parameters": {
-          "jsCode": "// ===========================================\n// RESCHEDULE_BOOKING - Change appointment date\n// ===========================================\n// This webhook receives email, booking number, and new datetime\n// Fetches the booking UID internally and reschedules\n// Returns SPEAKABLE confirmation\n// ===========================================\n\n// Get parameters from ElevenLabs request\nconst body = $input.first().json.body;\nconst email = body?.email;\nlet bookingNumber = body?.bookingNumber;\nconst newDateTime = body?.newDateTime; // ISO UTC format\n\n// Validate required fields\nif (!email || !email.includes('@')) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Necesito el email para buscar tu cita. ¿Me lo puedes dar?'\n    }\n  }];\n}\n\nif (!bookingNumber) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: '¿Cuál de tus citas quieres cambiar? ¿La primera, la segunda?'\n    }\n  }];\n}\n\nif (!newDateTime) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: '¿Para qué día y hora quieres cambiarla?'\n    }\n  }];\n}\n\n// Convert bookingNumber to integer\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\n// ==========================================\n// FETCH BOOKINGS TO GET THE UID\n// ==========================================\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Ha habido un problema al buscar tus citas. ¿Puedes intentarlo de nuevo?'\n    }\n  }];\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'No tienes citas activas para cambiar. ¿Quieres crear una nueva?'\n    }\n  }];\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: `Solo tienes ${activeBookings.length} cita${activeBookings.length > 1 ? 's' : ''}. ¿Cuál quieres cambiar?`\n    }\n  }];\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\nconst oldService = selectedBooking.bookingFieldsResponses?.service || selectedBooking.title || 'cita';\n\n// Format old date for reference\nconst oldDate = new Date(selectedBooking.start);\nconst oldDateStr = oldDate.toLocaleString('es-ES', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  hour: 'numeric',\n  minute: '2-digit',\n  timeZone: 'Europe/Madrid'\n});\n\n// ==========================================\n// RESCHEDULE THE BOOKING\n// ==========================================\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newDateTime,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: 'Solicitado por el paciente'\n    },\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Lo siento, no he podido cambiar la cita. Puede que ese horario ya no esté disponible. ¿Quieres buscar otra hora?'\n    }\n  }];\n}\n\n// Format new date for confirmation\nconst newDate = new Date(newDateTime);\nconst newDateStr = newDate.toLocaleString('es-ES', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  timeZone: 'Europe/Madrid'\n});\nconst newTimeStr = newDate.toLocaleString('es-ES', {\n  hour: 'numeric',\n  minute: '2-digit',\n  timeZone: 'Europe/Madrid'\n});\n\nreturn [{\n  json: {\n    success: true,\n    speakableResponse: `Listo, tu cita de ${oldService} ha sido cambiada al ${newDateStr} a las ${newTimeStr}. Te enviaremos la confirmación por email. ¿Algo más?`,\n    rescheduled: {\n      service: oldService,\n      oldDate: oldDateStr,\n      newDate: newDateStr,\n      newTime: newTimeStr\n    }\n  }\n}];"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          176,
-          800
-        ],
-        "id": "fe555bd1-416b-4068-b19a-c4df6c25e0e4",
-        "name": "Process & Call Cal.com3"
-      },
-      {
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ $json }}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          400,
-          800
-        ],
-        "id": "ff069e95-5ae7-4e4d-ba7c-5b10ef6932e0",
-        "name": "Respond to ElevenLabs3"
-      },
-      {
-        "parameters": {
-          "content": "## RESCHEDULE_BOOKING Webhook\n\n**URL:** POST /webhook/reschedule-booking\n\n**Input from ElevenLabs:**\n```json\n{\n  \"email\": \"maria@email.com\",\n  \"bookingNumber\": 1,\n  \"newDateTime\": \"2025-12-18T10:00:00Z\"\n}\n```\n\n**Flow:**\n1. Fetches patient bookings\n2. Finds booking by number (1, 2, 3...)\n3. Gets the UID internally\n4. Reschedules via Cal.com API\n5. Returns speakable confirmation\n\n**Output:**\n```json\n{\n  \"success\": true,\n  \"speakableResponse\": \"Listo, tu cita ha sido cambiada al...\"\n}\n```",
-          "width": 400
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          928,
-          288
-        ],
-        "id": "d1802d4b-d663-4d4a-a29f-9eec6f8e4754",
-        "name": "Instructions3"
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "cancel-booking",
-          "responseMode": "responseNode",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2,
-        "position": [
-          -48,
-          976
-        ],
-        "id": "09cca05e-6380-4de1-8cbf-81d4c8d80102",
-        "name": "Webhook: CANCEL_BOOKING",
-        "webhookId": "cancel-booking-elevenlabs"
-      },
-      {
-        "parameters": {
-          "jsCode": "// ===========================================\n// CANCEL_BOOKING - Cancel an appointment\n// ===========================================\n// This webhook receives email, booking number, and reason\n// Fetches the booking UID internally and cancels\n// Returns SPEAKABLE confirmation with 48h fee warning\n// ===========================================\n\n// Get parameters from ElevenLabs request\nconst body = $input.first().json.body;\nconst email = body?.email;\nlet bookingNumber = body?.bookingNumber;\nconst reason = body?.reason || 'Cancelado por el paciente';\n\n// Validate required fields\nif (!email || !email.includes('@')) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Necesito el email para buscar tu cita. ¿Me lo puedes dar?'\n    }\n  }];\n}\n\nif (!bookingNumber) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: '¿Cuál de tus citas quieres cancelar? ¿La primera, la segunda?'\n    }\n  }];\n}\n\n// Convert bookingNumber to integer\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\n// ==========================================\n// FETCH BOOKINGS TO GET THE UID\n// ==========================================\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Ha habido un problema al buscar tus citas. ¿Puedes intentarlo de nuevo?'\n    }\n  }];\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'No tienes citas activas para cancelar.'\n    }\n  }];\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: `Solo tienes ${activeBookings.length} cita${activeBookings.length > 1 ? 's' : ''}. ¿Cuál quieres cancelar?`\n    }\n  }];\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\nconst service = selectedBooking.bookingFieldsResponses?.service || selectedBooking.title || 'cita';\n\n// Check if cancellation is within 48 hours (fee applies)\nconst bookingDate = new Date(selectedBooking.start);\nconst now = new Date();\nconst hoursUntilBooking = (bookingDate - now) / (1000 * 60 * 60);\nconst lateCancellation = hoursUntilBooking < 48;\n\n// Format booking date for reference\nconst bookingDateStr = bookingDate.toLocaleString('es-ES', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  hour: 'numeric',\n  minute: '2-digit',\n  timeZone: 'Europe/Madrid'\n});\n\n// ==========================================\n// CANCEL THE BOOKING\n// ==========================================\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      speakableResponse: 'Lo siento, no he podido cancelar la cita. ¿Puedes intentarlo de nuevo?'\n    }\n  }];\n}\n\n// Build confirmation message\nlet speakableResponse;\nif (lateCancellation) {\n  speakableResponse = `Tu cita de ${service} del ${bookingDateStr} ha sido cancelada. Como era con menos de 48 horas de antelación, se aplicará un cargo de 10 euros. ¿Puedo ayudarte con algo más?`;\n} else {\n  speakableResponse = `Tu cita de ${service} del ${bookingDateStr} ha sido cancelada sin coste. ¿Puedo ayudarte con algo más?`;\n}\n\nreturn [{\n  json: {\n    success: true,\n    lateCancellation: lateCancellation,\n    speakableResponse: speakableResponse,\n    cancelled: {\n      service: service,\n      date: bookingDateStr,\n      reason: reason,\n      fee: lateCancellation ? 10 : 0\n    }\n  }\n}];"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          176,
-          976
-        ],
-        "id": "cd87206d-4bed-4c50-af88-c8df0d661f9c",
-        "name": "Process & Call Cal.com4"
-      },
-      {
-        "parameters": {
-          "respondWith": "json",
-          "responseBody": "={{ $json }}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.1,
-        "position": [
-          400,
-          976
-        ],
-        "id": "6dd57c9f-7829-4e35-bd46-cad9db383975",
-        "name": "Respond to ElevenLabs4"
-      },
-      {
-        "parameters": {
-          "content": "## CANCEL_BOOKING Webhook\n\n**URL:** POST /webhook/cancel-booking\n\n**Input from ElevenLabs:**\n```json\n{\n  \"email\": \"maria@email.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}\n```\n\n**Features:**\n- ✅ Auto-detects <48h cancellation\n- ✅ Warns about 10€ fee if applicable\n- ✅ Returns speakable confirmation\n\n**Output:**\n```json\n{\n  \"success\": true,\n  \"lateCancellation\": true,\n  \"speakableResponse\": \"Tu cita ha sido cancelada. Como era con menos de 48 horas...\"\n}\n```",
-          "width": 400
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          928,
-          496
-        ],
-        "id": "945a30b9-7f62-4551-9d3b-0baaeaa7ee62",
-        "name": "Instructions4"
-      },
-      {
-        "parameters": {
-          "url": "https://api.cal.com/v2/slots?eventTypeId=3502752&start=2025-12-19&end=2025-12-20&duration=50&timeZone=Europe/Madrid&format=range",
-          "sendHeaders": true,
-          "specifyHeaders": "json",
-          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          1264,
-          928
-        ],
-        "id": "64e79cd4-c0f9-480c-9484-5be23ecf203a",
-        "name": "HTTP Request"
-      }
-    ],
-    "connections": {
-      "Webhook: GET_BOOKINGS": {
-        "main": [
-          [
-            {
-              "node": "Process & Call Cal.com",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Process & Call Cal.com": {
-        "main": [
-          [
-            {
-              "node": "Respond to ElevenLabs",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook: CHECK_AVAILABILITY": {
-        "main": [
-          [
-            {
-              "node": "Process & Call Cal.com1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Process & Call Cal.com1": {
-        "main": [
-          [
-            {
-              "node": "Respond to ElevenLabs1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook: CREATE_BOOKING": {
-        "main": [
-          [
-            {
-              "node": "Process & Call Cal.com2",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Process & Call Cal.com2": {
-        "main": [
-          [
-            {
-              "node": "Respond to ElevenLabs2",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook: RESCHEDULE_BOOKING": {
-        "main": [
-          [
-            {
-              "node": "Process & Call Cal.com3",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Process & Call Cal.com3": {
-        "main": [
-          [
-            {
-              "node": "Respond to ElevenLabs3",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook: CANCEL_BOOKING": {
-        "main": [
-          [
-            {
-              "node": "Process & Call Cal.com4",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Process & Call Cal.com4": {
-        "main": [
-          [
-            {
-              "node": "Respond to ElevenLabs4",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      }
-    },
-    "authors": "Owner ",
-    "name": null,
-    "description": null
-  },
-  "activeVersionId": "bf6963a3-c5fc-4857-9280-b4ef57b0b00d",
+  "active": false,
+  "activeVersion": null,
+  "activeVersionId": null,
   "connections": {
     "Webhook: GET_BOOKINGS": {
       "main": [
-        [
-          {
-            "node": "Process & Call Cal.com",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Process & Call Cal.com": {
@@ -464,13 +21,7 @@
     },
     "Webhook: CHECK_AVAILABILITY": {
       "main": [
-        [
-          {
-            "node": "Process & Call Cal.com1",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Process & Call Cal.com1": {
@@ -486,13 +37,7 @@
     },
     "Webhook: CREATE_BOOKING": {
       "main": [
-        [
-          {
-            "node": "Process & Call Cal.com2",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Process & Call Cal.com2": {
@@ -508,13 +53,7 @@
     },
     "Webhook: RESCHEDULE_BOOKING": {
       "main": [
-        [
-          {
-            "node": "Process & Call Cal.com3",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Process & Call Cal.com3": {
@@ -530,13 +69,7 @@
     },
     "Webhook: CANCEL_BOOKING": {
       "main": [
-        [
-          {
-            "node": "Process & Call Cal.com4",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Process & Call Cal.com4": {
@@ -553,7 +86,7 @@
   },
   "createdAt": "2025-12-16T15:43:09.937Z",
   "id": "rwvvzPSwysXvpq9Q",
-  "isArchived": false,
+  "isArchived": true,
   "meta": null,
   "name": "ELEVENLABS - CANCEL_BOOKING Webhook",
   "nodes": [
@@ -572,7 +105,8 @@
       ],
       "id": "7ad9ed07-937c-442e-8b65-d9d3b3211bce",
       "name": "Webhook: GET_BOOKINGS",
-      "webhookId": "get-bookings-elevenlabs"
+      "webhookId": "get-bookings-elevenlabs",
+      "disabled": true
     },
     {
       "parameters": {
@@ -632,7 +166,8 @@
       ],
       "id": "f89eb4c3-1fdc-4d78-9906-fb77ff110022",
       "name": "Webhook: CHECK_AVAILABILITY",
-      "webhookId": "check-availability-elevenlabs"
+      "webhookId": "check-availability-elevenlabs",
+      "disabled": true
     },
     {
       "parameters": {
@@ -692,7 +227,8 @@
       ],
       "id": "c9649172-7820-4e2b-9cf7-f1aaed94e1ec",
       "name": "Webhook: CREATE_BOOKING",
-      "webhookId": "create-booking-elevenlabs"
+      "webhookId": "create-booking-elevenlabs",
+      "disabled": true
     },
     {
       "parameters": {
@@ -752,7 +288,8 @@
       ],
       "id": "bcbcb133-eb30-4a39-ba62-c705c07085ad",
       "name": "Webhook: RESCHEDULE_BOOKING",
-      "webhookId": "reschedule-booking-elevenlabs"
+      "webhookId": "reschedule-booking-elevenlabs",
+      "disabled": true
     },
     {
       "parameters": {
@@ -811,7 +348,8 @@
       ],
       "id": "09cca05e-6380-4de1-8cbf-81d4c8d80102",
       "name": "Webhook: CANCEL_BOOKING",
-      "webhookId": "cancel-booking-elevenlabs"
+      "webhookId": "cancel-booking-elevenlabs",
+      "disabled": true
     },
     {
       "parameters": {
@@ -922,6 +460,6 @@
   "staticData": null,
   "tags": [],
   "triggerCount": 5,
-  "updatedAt": "2025-12-16T22:48:04.115Z",
-  "versionId": "bf6963a3-c5fc-4857-9280-b4ef57b0b00d"
+  "updatedAt": "2025-12-17T12:31:54.000Z",
+  "versionId": "83cf036b-2aa5-4fe5-8984-5f800bc0062a"
 }
