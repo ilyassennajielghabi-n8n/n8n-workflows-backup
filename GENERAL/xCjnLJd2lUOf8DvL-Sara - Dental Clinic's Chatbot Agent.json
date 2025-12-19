@@ -1,9 +1,9 @@
 {
   "active": true,
   "activeVersion": {
-    "updatedAt": "2025-12-17T13:02:16.261Z",
-    "createdAt": "2025-12-17T13:02:16.261Z",
-    "versionId": "00006671-d0d4-4b82-8160-1bdbf8f3e982",
+    "updatedAt": "2025-12-18T12:36:15.271Z",
+    "createdAt": "2025-12-18T12:36:15.271Z",
+    "versionId": "60094ab8-3ee1-4e6f-b0dd-4da09cb2fe4c",
     "workflowId": "xCjnLJd2lUOf8DvL",
     "nodes": [
       {
@@ -335,14 +335,15 @@
       {
         "parameters": {
           "content": "## WORKFLOW v5 - ENHANCED\n\n**Nuevas funcionalidades:**\n\n✅ **Multi-idioma:** ES, EN, AR\n✅ **Análisis de imágenes:** Fotos de boca, facturas, documentos\n✅ **Sugerencia de servicios:** Según síntomas descritos\n✅ **Prevención doble reserva:** Verifica antes de crear",
-          "height": 336,
-          "width": 544
+          "height": 448,
+          "width": 544,
+          "color": 2
         },
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
           3184,
-          2976
+          2912
         ],
         "id": "dd8f19eb-8fcc-4231-b107-1439e799d3cb",
         "name": "Sticky Note"
@@ -514,7 +515,7 @@
       {
         "parameters": {
           "content": "## 💰 Monthly Cost Estimate (GPT-4o-mini)\n\n**Pricing:**\n\nInput: $0.15 / 1M tokens\nOutput: $0.60 / 1M tokens\n\n**Per conversation:** ~9,000 input + ~800 output tokens\n\n**Estimated costs:**\n\n- 5 conv/day → ~$0.27/month\n- 10 conv/day → ~$0.55/month\n- 20 conv/day → ~$1.10/month\n- 50 conv/day → ~$2.75/month\n- 100 conv/day → ~$5.50/month\n- 200 conv/day → ~$11.00/month\n- 500 conv/day → ~$27.50/month\n\n💡 GPT-4o would cost ~17x more",
-          "height": 464,
+          "height": 624,
           "width": 544,
           "color": 6
         },
@@ -522,7 +523,7 @@
         "typeVersion": 1,
         "position": [
           3184,
-          3328
+          3376
         ],
         "id": "740a1dd3-8bd3-4621-8e0b-a516281b3f2f",
         "name": "Sticky Note2"
@@ -1084,7 +1085,7 @@
     "name": null,
     "description": null
   },
-  "activeVersionId": "00006671-d0d4-4b82-8160-1bdbf8f3e982",
+  "activeVersionId": "60094ab8-3ee1-4e6f-b0dd-4da09cb2fe4c",
   "connections": {
     "When chat message received": {
       "main": [
@@ -1736,14 +1737,15 @@
     {
       "parameters": {
         "content": "## WORKFLOW v5 - ENHANCED\n\n**Nuevas funcionalidades:**\n\n✅ **Multi-idioma:** ES, EN, AR\n✅ **Análisis de imágenes:** Fotos de boca, facturas, documentos\n✅ **Sugerencia de servicios:** Según síntomas descritos\n✅ **Prevención doble reserva:** Verifica antes de crear",
-        "height": 336,
-        "width": 544
+        "height": 448,
+        "width": 544,
+        "color": 2
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
         3184,
-        2976
+        2912
       ],
       "id": "dd8f19eb-8fcc-4231-b107-1439e799d3cb",
       "name": "Sticky Note"
@@ -1915,7 +1917,7 @@
     {
       "parameters": {
         "content": "## 💰 Monthly Cost Estimate (GPT-4o-mini)\n\n**Pricing:**\n\nInput: $0.15 / 1M tokens\nOutput: $0.60 / 1M tokens\n\n**Per conversation:** ~9,000 input + ~800 output tokens\n\n**Estimated costs:**\n\n- 5 conv/day → ~$0.27/month\n- 10 conv/day → ~$0.55/month\n- 20 conv/day → ~$1.10/month\n- 50 conv/day → ~$2.75/month\n- 100 conv/day → ~$5.50/month\n- 200 conv/day → ~$11.00/month\n- 500 conv/day → ~$27.50/month\n\n💡 GPT-4o would cost ~17x more",
-        "height": 464,
+        "height": 624,
         "width": 544,
         "color": 6
       },
@@ -1923,7 +1925,7 @@
       "typeVersion": 1,
       "position": [
         3184,
-        3328
+        3376
       ],
       "id": "740a1dd3-8bd3-4621-8e0b-a516281b3f2f",
       "name": "Sticky Note2"
@@ -2340,6 +2342,6 @@
     }
   ],
   "triggerCount": 2,
-  "updatedAt": "2025-12-17T13:02:16.256Z",
-  "versionId": "00006671-d0d4-4b82-8160-1bdbf8f3e982"
+  "updatedAt": "2025-12-18T12:36:15.268Z",
+  "versionId": "60094ab8-3ee1-4e6f-b0dd-4da09cb2fe4c"
 }
