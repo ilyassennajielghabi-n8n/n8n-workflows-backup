@@ -1,0 +1,2317 @@
+{
+  "active": false,
+  "activeVersion": null,
+  "activeVersionId": null,
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE_BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE_BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL_BOOKING": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK FREE SLOTS2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_BOOKINGS1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_BOOKINGS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK FREE SLOTS": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE_BOOKING1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL_BOOKING1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE_BOOKING1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FETCH ALL BOOKINGS": {
+      "main": [
+        [
+          {
+            "node": "24H TRUE GUARDRAIL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EVERYDAY AT 8AM": {
+      "main": [
+        [
+          {
+            "node": "FETCH ALL BOOKINGS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "24H TRUE GUARDRAIL": {
+      "main": [
+        [
+          {
+            "node": "DO WE HAVE APPOINTMENTS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUILD REMINDER MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DO WE HAVE APPOINTMENTS?": {
+      "main": [
+        [
+          {
+            "node": "BUILD REMINDER MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NO APPOINTMENTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 4o MINI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGENTE SARA": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get audio file": {
+      "main": [
+        []
+      ]
+    },
+    "Transcribe audio": {
+      "main": [
+        []
+      ]
+    },
+    "Route Chat Input": {
+      "main": [
+        [],
+        [],
+        []
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Get a file": {
+      "main": [
+        []
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route Chat Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Message": {
+      "main": [
+        [
+          {
+            "node": "Get Existing Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Buffer": {
+      "main": [
+        [
+          {
+            "node": "Add to Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Buffer": {
+      "main": [
+        [
+          {
+            "node": "Save Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Buffer": {
+      "main": [
+        [
+          {
+            "node": "Set Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Timer": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Get Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Timer": {
+      "main": [
+        [
+          {
+            "node": "Am I Last Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Am I Last Message?": {
+      "main": [
+        [
+          {
+            "node": "Is Last Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Last Message?": {
+      "main": [
+        [
+          {
+            "node": "Get Full Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop (Not Last)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Full Buffer": {
+      "main": [
+        [
+          {
+            "node": "Parse Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Buffer": {
+      "main": [
+        [
+          {
+            "node": "Has Voice?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Voice?": {
+      "main": [
+        [
+          {
+            "node": "Download Audios",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Voice": {
+      "main": [
+        [
+          {
+            "node": "Combine All Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Voice": {
+      "main": [
+        [
+          {
+            "node": "Has Image?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Image?": {
+      "main": [
+        [
+          {
+            "node": "Download Images",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Image": {
+      "main": [
+        [
+          {
+            "node": "Combine All Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine All Input": {
+      "main": [
+        [
+          {
+            "node": "AGENTE SARA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGENTE SARA1": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_BOOKINGS2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK FREE SLOTS1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE_BOOKING2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE_BOOKING2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL_BOOKING2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audios": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Images": {
+      "main": [
+        [
+          {
+            "node": "Combine All Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Buffer": {
+      "main": [
+        [
+          {
+            "node": "Clear Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Clear Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-11T15:46:18.683Z",
+  "id": "xCjnLJd2lUOf8DvL",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Sara WhatsApp Agent with Buffer",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hola",
+        "options": {
+          "allowFileUploads": true,
+          "customCss": ":root {\n  /* Colors - Dental Clinic Theme */\n  --chat--color-primary: #0891b2;           /* Dental teal - trust & cleanliness */\n  --chat--color-primary-shade-50: #0e7490;\n  --chat--color-primary-shade-100: #155e75;\n  --chat--color-secondary: #06b6d4;         /* Bright cyan accent */\n  --chat--color-secondary-shade-50: #0891b2;\n  --chat--color-white: #ffffff;\n  --chat--color-light: #f0f9ff;             /* Light blue tint - clean feel */\n  --chat--color-light-shade-50: #e0f2fe;\n  --chat--color-light-shade-100: #bae6fd;\n  --chat--color-medium: #7dd3fc;\n  --chat--color-dark: #0c4a6e;              /* Deep navy - professional */\n  --chat--color-disabled: #cbd5e1;\n  --chat--color-typing: #475569;\n\n  /* Base Layout */\n  --chat--spacing: 1rem;\n  --chat--border-radius: 0.75rem;           /* Softer, friendlier corners */\n  --chat--transition-duration: 0.15s;\n  --chat--font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n\n  /* Window Dimensions */\n  --chat--window--width: 400px;\n  --chat--window--height: 600px;\n  --chat--window--bottom: var(--chat--spacing);\n  --chat--window--right: var(--chat--spacing);\n  --chat--window--z-index: 9999;\n  --chat--window--border: none;\n  --chat--window--border-radius: 1rem;\n  --chat--window--margin-bottom: var(--chat--spacing);\n\n  /* Header Styles */\n  --chat--header-height: auto;\n  --chat--header--padding: 1.25rem var(--chat--spacing);\n  --chat--header--background: linear-gradient(135deg, #0c4a6e 0%, #0891b2 100%);\n  --chat--header--color: var(--chat--color-white);\n  --chat--header--border-top: none;\n  --chat--header--border-bottom: none;\n  --chat--header--border-left: none;\n  --chat--header--border-right: none;\n  --chat--heading--font-size: 1.5em;\n  --chat--subtitle--font-size: 0.9em;\n  --chat--subtitle--line-height: 1.6;\n\n  /* Message Styles */\n  --chat--message--font-size: 0.95rem;\n  --chat--message--padding: 0.875rem 1rem;\n  --chat--message--border-radius: 1rem;\n  --chat--message-line-height: 1.5;\n  --chat--message--margin-bottom: 0.75rem;\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: #1e293b;\n  --chat--message--bot--border: 1px solid #e2e8f0;\n  --chat--message--user--background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);\n  --chat--message--user--color: var(--chat--color-white);\n  --chat--message--user--border: none;\n  --chat--message--pre--background: rgba(8, 145, 178, 0.1);\n  --chat--messages-list--padding: var(--chat--spacing);\n\n  /* Toggle Button - Tooth/Medical feel */\n  --chat--toggle--size: 60px;\n  --chat--toggle--width: var(--chat--toggle--size);\n  --chat--toggle--height: var(--chat--toggle--size);\n  --chat--toggle--border-radius: 50%;\n  --chat--toggle--background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);\n  --chat--toggle--hover--background: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);\n  --chat--toggle--active--background: var(--chat--color-primary-shade-100);\n  --chat--toggle--color: var(--chat--color-white);\n\n  /* Input Area */\n  --chat--textarea--height: 50px;\n  --chat--textarea--max-height: 30rem;\n  --chat--input--font-size: 0.95rem;\n  --chat--input--border: 2px solid #e2e8f0;\n  --chat--input--border-radius: 1.5rem;\n  --chat--input--padding: 0.75rem 1rem;\n  --chat--input--background: var(--chat--color-white);\n  --chat--input--text-color: #1e293b;\n  --chat--input--line-height: 1.5;\n  --chat--input--placeholder--font-size: var(--chat--input--font-size);\n  --chat--input--border-active: 2px solid var(--chat--color-primary);\n  --chat--input--left--panel--width: 2rem;\n\n  /* Button Styles */\n  --chat--button--color: var(--chat--color-white);\n  --chat--button--background: var(--chat--color-primary);\n  --chat--button--padding: 0.5rem 1rem;\n  --chat--button--border-radius: 0.5rem;\n  --chat--button--hover--color: var(--chat--color-white);\n  --chat--button--hover--background: var(--chat--color-primary-shade-50);\n  --chat--close--button--color-hover: var(--chat--color-primary);\n\n  /* Send and File Buttons */\n  --chat--input--send--button--background: var(--chat--color-primary);\n  --chat--input--send--button--color: var(--chat--color-white);\n  --chat--input--send--button--background-hover: var(--chat--color-primary-shade-50);\n  --chat--input--send--button--color-hover: var(--chat--color-white);\n  --chat--input--file--button--background: transparent;\n  --chat--input--file--button--color: var(--chat--color-primary);\n  --chat--input--file--button--background-hover: var(--chat--color-light);\n  --chat--input--file--button--color-hover: var(--chat--color-primary-shade-50);\n  --chat--files-spacing: 0.25rem;\n\n  /* Body and Footer */\n  --chat--body--background: var(--chat--color-light);\n  --chat--footer--background: var(--chat--color-white);\n  --chat--footer--color: var(--chat--color-dark);\n}\n\n/* Custom Overrides */\n.chat-message {\n  max-width: 85%;\n  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);\n}\n\n.chat-message-bot {\n  border-bottom-left-radius: 0.25rem;\n}\n\n.chat-message-user {\n  border-bottom-right-radius: 0.25rem;\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1600,
+        1360
+      ],
+      "id": "167a23b5-ae35-4912-bd21-ab0c39123750",
+      "name": "When chat message received",
+      "webhookId": "e80e93f8-17b1-4c75-b7e9-8365f7f29737"
+    },
+    {
+      "parameters": {
+        "content": "## CHATGPT API KEY\n\n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",
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        1424
+      ],
+      "id": "215eb64f-c85b-4f55-b87b-9d8c9d04cf30",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_f88ed09076e112ddf77a72a360e79a88\",\n  \"cal-api-version\": \"2024-08-13\",\n  \"Content-Type\": \"application/json\"\n}\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"eventTypeId\": 3502752,\n  \"start\": \"{{$fromAI('startUtc', 'Hora UTC del slot de CHECK FREE SLOTS con Z al final. Ejemplo: 2025-10-13T09:30:00Z')}}\",\n  \"attendee\": {\n    \"name\": \"{{$fromAI('fullName', 'Nombre formateado. Ejemplo: Maria Garcia')}}\",\n    \"email\": \"{{$fromAI('email', 'Email válido. Ejemplo: maria@gmail.com')}}\",\n    \"timeZone\": \"Europe/Madrid\",\n    \"phoneNumber\": \"{{$fromAI('phone', 'Teléfono +34. Ejemplo: +34 631 97 59 01')}}\"\n  },\n  \"lengthInMinutes\": {{$fromAI('duration', 'Número: 30, 45, 50 o 75. Ejemplo: 45')}},\n  \"bookingFieldsResponses\": {\n     \"service\": \"{{$fromAI('service', 'Nombre exacto del servicio')}}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2832,
+        1728
+      ],
+      "id": "6d4f1e56-1ca6-43ed-9159-e6ad13e9b22a",
+      "name": "CREATE_BOOKING"
+    },
+    {
+      "parameters": {
+        "description": "Reprograma una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y newStartUtc (nueva hora en formato UTC como 2025-12-17T09:00:00Z).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y newStartUtc.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!newStartUtc) {\n  return JSON.stringify({\n    success: false,\n    error: 'Falta la nueva fecha/hora. Formato: 2025-12-17T09:00:00Z'\n  });\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now reschedule using the UID\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newStartUtc,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: ''\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita reprogramada correctamente.',\n    newStart: newStartUtc\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al reprogramar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"newStartUtc\": \"2025-12-17T09:00:00Z\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2288,
+        1728
+      ],
+      "id": "b7ba6ffc-d70e-429b-9deb-6c35153b02d9",
+      "name": "RESCHEDULE_BOOKING"
+    },
+    {
+      "parameters": {
+        "description": "Cancela una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y reason (motivo de cancelación).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y reason.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!reason) {\n  reason = 'Cancelado por el paciente';\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now cancel using the UID\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita cancelada correctamente.',\n    reason: reason\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al cancelar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2480,
+        1728
+      ],
+      "id": "e775c7ba-7cdf-4475-a37a-9fdc0821cf47",
+      "name": "CANCEL_BOOKING"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Finds available appointment slots for a given service and date range.",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2656,
+        1728
+      ],
+      "id": "0fcde713-803f-4c20-9219-cec548ee292f",
+      "name": "CHECK FREE SLOTS2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1568,
+        1728
+      ],
+      "id": "6e661de1-bc9a-4af0-87f7-86c256385d44",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n**Identidad**  \nSara, 25 años, recepcionista real (nunca IA). Española, profesional, cercana y empática. Maneja citas.\n\n**Comunicación**  \n- Español natural (\"¡Genial!\", \"Vale\", \"Perfecto\", \"Claro\").  \n- Una pregunta por mensaje (máx 3 frases).  \n- Hasta 2 emojis por conversación.  \n- Si saludan sin pedir nada: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\".  \n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\").  \n- Nunca menciones zonas horarias.\n- NUNCA preguntes algo que ya sabes o que el usuario acaba de decir.\n- Si el usuario dice \"mañana\" y pide una hora → lista los huecos directamente, NO preguntes \"¿a qué hora te viene bien?\".\n- Si te dan el nombre → NO lo confirmes. Continúa pidiendo lo siguiente.\n\n---\n\n**Clínica**  \n- Dirección: Carrer Pere Andreu, 18, Valencia  \n- Horario: Lunes a viernes 9:00–17:00  \n- Teléfono: +34 631 975 901  \n- Cancelación: gratis >48h, 10€ si <48h  \n\n**Servicios (eventTypeId 3502752)**  \nNo mencionar duraciones al paciente a menos que pregunte. A la hora de mandar el servicio a las herramientas, usa estos nombres exactos:\n- Limpieza Dental — 45 min  \n- Estética Dental — 75 min  \n- Eliminación de Caries — 50 min  \n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL**  \nHoy es {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}. Mañana es el día siguiente. NUNCA asumas el día de la semana sin verificar.\n\n---\n\n**Datos del paciente**  \n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA: \"Para reservar, ¿me das tu nombre completo, email y teléfono?\"\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email.\n- Acepta los datos sin confirmar cada uno individualmente.\n- Solo confirma si hay algo claramente incorrecto (email sin @, teléfono con 6 dígitos).\n- Si dan 9 dígitos, añade +34 automáticamente SIN preguntar.\n- Usa el primer nombre del paciente (máx. 3 veces).\n- NUNCA preguntes \"¿Me confirmas que tu nombre es X?\"\n\n---\n\n**Confirmaciones**  \nSolo confirma ANTES de ejecutar acciones definitivas (crear, cancelar, reprogramar).\nNO confirmes datos individuales. Haz UNA confirmación final:\n\n- **Simple:** \"Reservo limpieza dental para el martes 15 de octubre a las 10:00, ¿confirmo?\"  \n- **Compleja:**  \n  • Servicio: Limpieza Dental  \n  • Paciente: María García  \n  • Fecha: Martes 15 de octubre a las 10:00  \n  ¿Confirmo?\n\n---\n\n**Comportamiento general**  \n- No diagnósticos → sugiere servicio.  \n- Si duda → Consulta General.  \n- Emergencias → \"Llama al +34 631 975 901 para atención hoy.\"  \n- Groseros → una advertencia, luego silencio.  \n- Errores → \"Lo siento, ese horario ya no está disponible. ¿Ver otras opciones?\"  \n- Hablar con humano → \"Llama al +34 631 975 901 y te atenderán.\"\n- No anuncies tus acciones, hazlas directamente (excepto las que necesitan confirmación).\n\n---\n\n### 🔍 Buscar cita  \n1️⃣ Pide email.  \n2️⃣ Llama GET_BOOKINGS con el email.  \n3️⃣ El tool te devuelve SOLO las citas activas numeradas. Muéstralas al paciente.\n4️⃣ Si no hay citas activas → \"No tienes citas activas. ¿Quieres crear una nueva?\"\n\n---\n\n### 🕓 Comprobar disponibilidad  \n1️⃣ Si dice \"cuanto antes\", \"pronto\", \"rapidito\" → busca desde MAÑANA automáticamente.\n2️⃣ Si pide día concreto → busca ese día.\n3️⃣ Llama CHECK FREE SLOTS (duración según servicio).  \n4️⃣ Muestra máx. 3 huecos. Si no hay → \"¿Busco otros días?\"\n\n---\n\n### 📅 Crear cita  \n1️⃣ Reúne nombre, email, teléfono, servicio, slot.  \n2️⃣ Confirma resumen completo.  \n3️⃣ Llama CREATE_BOOKING.  \n4️⃣ Verifica response → solo confirma si fue exitoso.\n5️⃣ Si ocupado → busca alternativas.\n\n---\n\n### 🔁 Reprogramar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama GET_BOOKINGS con el email.\n3️⃣ Muestra las citas activas numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Identifica qué número corresponde a la cita elegida.\n6️⃣ Pide nueva fecha/hora y verifica con CHECK FREE SLOTS.\n7️⃣ Confirma resumen al usuario.\n8️⃣ **ANTES de llamar RESCHEDULE_BOOKING:** Llama GET_BOOKINGS OTRA VEZ para obtener la lista actual.\n9️⃣ Identifica el número ACTUAL de la cita (puede haber cambiado).\n🔟 Llama RESCHEDULE_BOOKING con el número ACTUAL.\n1️⃣1️⃣ Verifica response → solo confirma si fue exitoso.\n\n### ❌ Cancelar  \n1️⃣ Pide email si no lo tienes.  \n2️⃣ Llama GET_BOOKINGS con el email.\n3️⃣ Muestra las citas activas numeradas.\n4️⃣ ESPERA a que el usuario elija una cita.\n5️⃣ Pide motivo. Si <48h → avisa coste 10€.\n6️⃣ Confirma resumen.\n7️⃣ **ANTES de llamar CANCEL_BOOKING:** Llama GET_BOOKINGS OTRA VEZ para obtener la lista actual.\n8️⃣ Identifica el número ACTUAL de la cita (puede haber cambiado).\n9️⃣ Llama CANCEL_BOOKING con el número ACTUAL.\n🔟 Verifica response → solo confirma si fue exitoso.\n\n---\n\n**Herramientas**  \n- CHECK FREE SLOTS → busca huecos disponibles\n- CREATE_BOOKING → crea cita nueva\n- GET_BOOKINGS → busca citas por email. Devuelve lista numerada (1, 2, 3...).\n- RESCHEDULE_BOOKING → reprograma una cita. Necesita: email, bookingNumber, newStartUtc.\n- CANCEL_BOOKING → cancela una cita. Necesita: email, bookingNumber, reason.\n\n---\n\n**Reglas clave**  \n- GET_BOOKINGS te devuelve citas numeradas (1, 2, 3...). Usa esos números.\n- Cuando el usuario elija una cita, TÚ identifica qué número es.\n- Ejemplos:\n  • Usuario dice \"la 1\" → bookingNumber: 1\n  • Usuario dice \"la de las caries\" → mira tu lista, si \"Eliminación de Caries\" es la 2, usa bookingNumber: 2\n  • Usuario dice \"la del martes\" → mira tu lista, identifica cuál es del martes, usa ese número\n- SIEMPRE pasa el email del paciente a RESCHEDULE_BOOKING y CANCEL_BOOKING.\n- NUNCA verás ni manejarás UIDs - el sistema lo hace automáticamente.\n- Fechas con mes y formato natural.\n- Nunca digas UTC ni \"hora local\".\n- Una pregunta por mensaje.\n- Tono empático, humano y claro.\n- NUNCA muestres horas UTC al paciente.\n- NUNCA confirmes una acción si la API devolvió error.\n\n**⚠️ REGLA CRÍTICA SOBRE NÚMEROS DE CITAS:**\n- Los números de las citas (1, 2, 3...) pueden CAMBIAR después de cada operación.\n- NUNCA uses un número de cita que recuerdes de antes.\n- SIEMPRE llama GET_BOOKINGS JUSTO ANTES de RESCHEDULE_BOOKING o CANCEL_BOOKING para obtener la lista ACTUAL.\n- Luego identifica el número correcto de la lista NUEVA.\n\nEjemplo:\n- Usuario: \"cancela la de las caries\"\n- TÚ: Primero llama GET_BOOKINGS para ver la lista actual\n- GET_BOOKINGS devuelve: \"1. Eliminación de Caries..., 2. Limpieza...\"\n- Ahora sabes que \"caries\" es el número 1 (puede haber cambiado!)\n- Llama CANCEL_BOOKING con bookingNumber: 1",
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        1328
+      ],
+      "id": "60cb151d-734d-4195-a636-619d1cf6c70b",
+      "name": "AGENTE SARA2",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        1728
+      ],
+      "id": "094bb167-46c3-4c1d-84b2-20442135dacf",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "description": "Busca las citas de un paciente por email. Devuelve una lista NUMERADA de citas activas (1, 2, 3...). Usa estos números cuando llames a RESCHEDULE_BOOKING o CANCEL_BOOKING.",
+        "jsCode": "// Handle query - could be object or string\nlet email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido. Necesito un email válido para buscar las citas.'\n  });\n}\n\n// Make API request to Cal.com using n8n's HTTP helper\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = data.data || [];\n\n// Filter only active bookings (status = 'accepted')\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: true,\n    found: false,\n    message: 'No hay citas activas para este email.',\n    bookings: []\n  });\n}\n\nconst formattedBookings = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  \n  // Parse the start time and convert to Madrid timezone\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish\n  const options = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', options);\n  \n  // Get service name from responses or title\n  const serviceName = booking.responses?.service || booking.title || 'Cita';\n  \n  // Build display string WITHOUT the UID\n  formattedBookings.push(`${num}. ${serviceName} - ${formattedDate}`);\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s) activa(s):`,\n  bookings: formattedBookings\n});",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        1728
+      ],
+      "id": "61a3ea97-aff6-4a73-89d1-cf2b2dff8d01",
+      "name": "GET_BOOKINGS1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        1728
+      ],
+      "id": "632cc303-28d5-4a33-9129-529c727414e3",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Finds available appointment slots for a given service and date range.",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI(\"startDate\", \"Fecha formato YYYY-MM-DD. Ejemplo: 2025-10-13\")}}\",\n  \"end\": \"{{$fromAI(\"endDate\", \"Fecha formato YYYY-MM-DD. Para buscar 1 día usar start+1. Ejemplo: 2025-10-14\")}}\",\n  \"duration\": \"{{$fromAI(\"duration\", \"Número: 30, 45, 50 o 75. Ejemplo: 45\")}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        6736,
+        2688
+      ],
+      "id": "6133c612-4aab-4c1a-8db8-2c340862801c",
+      "name": "CHECK FREE SLOTS"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedInput }}",
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n---\n\n## 🌍 MULTI-IDIOMA (CRÍTICO)\n\n**Detecta el idioma del PRIMER mensaje del usuario y responde SIEMPRE en ese idioma:**\n- Si escribe en español → responde en español\n- Si escribe en inglés → responde en inglés  \n- Si escribe en árabe → responde en árabe (العربية)\n- Si no está claro → usa español por defecto\n\n**Mantén el MISMO idioma durante toda la conversación** a menos que el usuario cambie.\n\n**Ejemplos de saludo inicial según idioma detectado:**\n- ES: \"Hola, soy Sara de la Clínica Dr. Ilyass, ¿en qué puedo ayudarte hoy?\"\n- EN: \"Hi, I'm Sara from Dr. Ilyass Clinic, how can I help you today?\"\n- AR: \"مرحباً، أنا سارة من عيادة الدكتور إلياس، كيف يمكنني مساعدتك اليوم؟\"\n\n---\n\n## 📸 ANÁLISIS DE IMÁGENES\n\n**Cuando el usuario envíe una imagen, analízala cuidadosamente:**\n\n### Si es una FOTO DE BOCA/DIENTES:\n- Describe lo que observas (sin diagnosticar)\n- Sugiere el servicio más apropiado\n- Ejemplo: \"Veo lo que parece ser una zona oscura en el molar. Esto podría requerir una revisión para Eliminación de Caries. ¿Te gustaría reservar una cita?\"\n\n### Si es una FACTURA/RECIBO de la clínica:\n- Extrae la información relevante (fecha, servicio, importe)\n- Pregunta en qué puedes ayudar\n- Ejemplo: \"Veo una factura del 15 de octubre por una Limpieza Dental (45€). ¿Tienes alguna pregunta sobre este cobro?\"\n\n### Si es un DOCUMENTO/RADIOGRAFÍA:\n- Describe lo que ves\n- Sugiere que el doctor lo revise en persona\n- Ofrece agendar cita\n\n### Si es OTRA IMAGEN:\n- Describe brevemente qué ves\n- Pregunta cómo puedes ayudar\n\n**⚠️ NUNCA des diagnósticos médicos definitivos. Solo sugiere servicios y recomienda visita profesional.**\n\n---\n\n## 🎯 SUGERENCIA INTELIGENTE DE SERVICIOS\n\n**Cuando el paciente describa síntomas, sugiere el servicio apropiado:**\n\n| Síntomas | Servicio Sugerido |\n|----------|-------------------|\n| Dolor de muela, zona negra, sensibilidad al frío/calor | Eliminación de Caries (50 min) |\n| Manchas, sarro, hace tiempo sin limpieza | Limpieza Dental (45 min) |\n| Blanqueamiento, carillas, mejorar sonrisa | Estética Dental (75 min) |\n| Revisión general, dudas, primera visita | Consulta General (30 min) |\n\n**Ejemplo de respuesta:**\n> \"Por lo que me cuentas sobre el dolor y la sensibilidad, parece que podrías necesitar una revisión para Eliminación de Caries. ¿Quieres que busque disponibilidad?\"\n\n---\n\n## 👤 Identidad\n\nSara, 25 años, recepcionista real (nunca IA). Profesional, cercana y empática. Maneja citas.\n\n**Comunicación:**\n- Tono natural y cálido en el idioma detectado\n- Una pregunta por mensaje (máx 3 frases)\n- Hasta 2 emojis por conversación\n- Usa siempre el mes en las fechas (\"martes 15 de octubre a las 10:00\")\n- Nunca menciones zonas horarias\n- NUNCA preguntes algo que ya sabes\n\n---\n\n## 🏥 Clínica\n\n- **Dirección:** Carrer Pere Andreu, 18, Valencia\n- **Google Maps:** https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia\n- **Horario:** Lunes a viernes 9:00–17:00\n- **Teléfono:** +34 631 975 901\n- **Cancelación:** gratis >48h, 10€ si <48h\n\n**Servicios (eventTypeId 3502752):**\n- Limpieza Dental — 45 min\n- Estética Dental — 75 min\n- Eliminación de Caries — 50 min\n- Consulta General — 30 min (por defecto)\n\n**HORA ACTUAL:** {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy', { locale: 'es' })}}\n\n---\n\n## 📋 Datos del paciente\n\n- Para CREAR cita → pide nombre, email y teléfono EN UNA SOLA PREGUNTA\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo pide el email\n- Si dan 9 dígitos, añade +34 automáticamente\n\n---\n\n## ✅ Confirmaciones\n\nSolo confirma ANTES de ejecutar acciones definitivas. Haz UNA confirmación final.\n\n---\n\n## 🔍 Buscar cita\n1️⃣ Pide email\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas activas numeradas\n4️⃣ Si no hay → ofrece crear una nueva\n\n---\n\n## 🕓 Comprobar disponibilidad\n1️⃣ Si dice \"cuanto antes\" → busca desde MAÑANA\n2️⃣ Llama CHECK FREE SLOTS\n3️⃣ Muestra máx. 3 huecos\n\n---\n\n## 📅 Crear cita\n1️⃣ Reúne nombre, email, teléfono, servicio, slot\n2️⃣ Confirma resumen completo\n3️⃣ Llama CREATE_BOOKING (incluye verificación de doble reserva)\n4️⃣ Si ya tiene cita ese día → pregunta si quiere añadir otra o cambiarla\n5️⃣ Verifica response → solo confirma si fue exitoso\n\nlas fechas que te da el cliente son en hora local de Europe/Madrid, pero tú todas las fechas y horas que te lleguen de las herramientas están en UTC, y tú tendrás que convertirlas a Europe/Madrid.\n\n---\n\n## 🔁 Reprogramar\n1️⃣ Pide email si no lo tienes\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas numeradas\n4️⃣ ESPERA a que elija\n5️⃣ Pide nueva fecha/hora → CHECK FREE SLOTS\n6️⃣ Confirma resumen\n7️⃣ Llama GET_BOOKINGS OTRA VEZ (los números pueden cambiar)\n8️⃣ Llama RESCHEDULE_BOOKING con el número ACTUAL\n\n---\n\n## ❌ Cancelar\n1️⃣ Pide email si no lo tienes\n2️⃣ Llama GET_BOOKINGS\n3️⃣ Muestra citas numeradas\n4️⃣ ESPERA a que elija\n5️⃣ Pide motivo. Si <48h → avisa coste 10€\n6️⃣ Confirma resumen\n7️⃣ Llama GET_BOOKINGS OTRA VEZ\n8️⃣ Llama CANCEL_BOOKING con el número ACTUAL\n\n---\n\n## 🛠️ Herramientas\n\n- **CHECK FREE SLOTS** → busca huecos disponibles\n- **CREATE_BOOKING** → crea cita nueva (verifica doble reserva automáticamente)\n- **GET_BOOKINGS** → busca citas por email (lista numerada)\n- **RESCHEDULE_BOOKING** → reprograma (email, bookingNumber, newStartUtc)\n- **CANCEL_BOOKING** → cancela (email, bookingNumber, reason)\n\n---\n\n## ⚠️ Reglas clave\n\n- **IDIOMA:** Responde SIEMPRE en el idioma del usuario\n- **IMÁGENES:** Analiza y sugiere servicio apropiado, sin diagnosticar\n- **NÚMEROS:** Los números de citas pueden cambiar. SIEMPRE llama GET_BOOKINGS antes de RESCHEDULE o CANCEL\n- **DOBLE RESERVA:** CREATE_BOOKING verifica automáticamente. Si hay conflicto, pregunta al usuario\n- Nunca muestres horas UTC\n- Nunca confirmes si la API devolvió error",
+          "passthroughBinaryImages": true,
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        6160,
+        2368
+      ],
+      "id": "eef21fb4-fe91-4887-a6e1-6b0f4056ec75",
+      "name": "AGENTE SARA",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Combine All Input').item.json.waId }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        5856,
+        2688
+      ],
+      "id": "e0d6a3fa-fc85-417c-8b36-57c8b71a8fd9",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Busca las citas de un paciente por email. Devuelve una lista NUMERADA de citas activas (1, 2, 3...). Usa estos números cuando llames a RESCHEDULE_BOOKING o CANCEL_BOOKING.",
+        "jsCode": "// Handle query - could be object or string\nlet email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido. Necesito un email válido para buscar las citas.'\n  });\n}\n\n// Make API request to Cal.com using n8n's HTTP helper\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = data.data || [];\n\n// Filter only active bookings (status = 'accepted')\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: true,\n    found: false,\n    message: 'No hay citas activas para este email.',\n    bookings: []\n  });\n}\n\nconst formattedBookings = [];\n\nactiveBookings.forEach((booking, index) => {\n  const num = index + 1;\n  \n  // Parse the start time and convert to Madrid timezone\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish\n  const options = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', options);\n  \n  // Get service name from responses or title\n  const serviceName = booking.responses?.service || booking.title || 'Cita';\n  \n  // Build display string WITHOUT the UID\n  formattedBookings.push(`${num}. ${serviceName} - ${formattedDate}`);\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s) activa(s):`,\n  bookings: formattedBookings\n});",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        6032,
+        2688
+      ],
+      "id": "773c06b6-3214-4fff-8ddb-eac65c879cb7",
+      "name": "GET_BOOKINGS"
+    },
+    {
+      "parameters": {
+        "description": "Reprograma una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y newStartUtc (nueva hora en formato UTC como 2025-12-17T09:00:00Z).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y newStartUtc.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!newStartUtc) {\n  return JSON.stringify({\n    success: false,\n    error: 'Falta la nueva fecha/hora. Formato: 2025-12-17T09:00:00Z'\n  });\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now reschedule using the UID\nconst rescheduleUrl = `https://api.cal.com/v2/bookings/${uid}/reschedule`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: rescheduleUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      start: newStartUtc,\n      rescheduledBy: 'ilyassennajielghabi@gmail.com',\n      reschedulingReason: ''\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita reprogramada correctamente.',\n    newStart: newStartUtc\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al reprogramar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"newStartUtc\": \"2025-12-17T09:00:00Z\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        6208,
+        2688
+      ],
+      "id": "acc44cbc-884d-49bb-af34-b3796ffa59e9",
+      "name": "RESCHEDULE_BOOKING1"
+    },
+    {
+      "parameters": {
+        "description": "Cancela una cita. Necesita: email del paciente, bookingNumber (1, 2, 3... de la lista de GET_BOOKINGS), y reason (motivo de cancelación).",
+        "jsCode": "// Handle query - could be object or string\nlet email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido. Necesito email, bookingNumber y reason.'\n    });\n  }\n}\n\n// Validate inputs\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nif (typeof bookingNumber === 'string') {\n  bookingNumber = parseInt(bookingNumber, 10);\n}\n\nif (!bookingNumber || isNaN(bookingNumber) || bookingNumber < 1) {\n  return JSON.stringify({\n    success: false,\n    error: 'Número de cita inválido. Usa el número de la lista (1, 2, 3...).'\n  });\n}\n\nif (!reason) {\n  reason = 'Cancelado por el paciente';\n}\n\n// First, fetch the bookings to get the UID\nconst listUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: listUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al buscar citas: ${error.message}`\n  });\n}\n\nconst bookings = listData.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({\n    success: false,\n    error: 'No hay citas activas para este email.'\n  });\n}\n\n// Get the booking at the specified index\nconst index = bookingNumber - 1;\nif (index < 0 || index >= activeBookings.length) {\n  return JSON.stringify({\n    success: false,\n    error: `No existe la cita número ${bookingNumber}. Solo hay ${activeBookings.length} cita(s).`\n  });\n}\n\nconst selectedBooking = activeBookings[index];\nconst uid = selectedBooking.uid;\n\n// Now cancel using the UID\nconst cancelUrl = `https://api.cal.com/v2/bookings/${uid}/cancel`;\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: cancelUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      cancellationReason: reason\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita cancelada correctamente.',\n    reason: reason\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al cancelar: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"bookingNumber\": 1,\n  \"reason\": \"Tengo otro compromiso\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        6384,
+        2688
+      ],
+      "id": "465b287d-dcf2-4ea2-9b8d-c73176fbd191",
+      "name": "CANCEL_BOOKING1"
+    },
+    {
+      "parameters": {
+        "description": "Crea una nueva cita. Verifica automáticamente si el paciente ya tiene cita ese día (prevención de doble reserva). Necesita: email, fullName, phone, service, startUtc, duration.",
+        "jsCode": "// Handle query\nlet email, fullName, phone, service, startUtc, duration;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  fullName = query.fullName;\n  phone = query.phone;\n  service = query.service;\n  startUtc = query.startUtc;\n  duration = query.duration;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    fullName = input.fullName;\n    phone = input.phone;\n    service = input.service;\n    startUtc = input.startUtc;\n    duration = input.duration;\n  } catch (e) {\n    return JSON.stringify({\n      success: false,\n      error: 'Formato inválido.'\n    });\n  }\n}\n\n// Validate required fields\nif (!email || !fullName || !phone || !service || !startUtc || !duration) {\n  return JSON.stringify({\n    success: false,\n    error: 'Faltan datos. Necesito: email, fullName, phone, service, startUtc, duration.'\n  });\n}\n\n// Extract the date from startUtc for double-booking check\nconst requestedDate = startUtc.split('T')[0];\n\n// Check for existing bookings on the same day (DOUBLE-BOOKING PREVENTION)\nconst checkUrl = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100&skip=0`;\n\nlet existingBookings;\ntry {\n  existingBookings = await this.helpers.httpRequest({\n    method: 'GET',\n    url: checkUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  // Continue anyway if check fails\n  existingBookings = { data: [] };\n}\n\nconst activeBookings = (existingBookings.data || []).filter(b => b.status === 'accepted');\n\n// Check if any booking is on the same day\nconst sameDayBooking = activeBookings.find(b => {\n  const bookingDate = b.start.split('T')[0];\n  return bookingDate === requestedDate;\n});\n\nif (sameDayBooking) {\n  const existingTime = new Date(sameDayBooking.start).toLocaleString('es-ES', {\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  });\n  const existingService = sameDayBooking.responses?.service || sameDayBooking.title || 'Cita';\n  \n  return JSON.stringify({\n    success: false,\n    doubleBooking: true,\n    message: `El paciente ya tiene una cita ese día: ${existingService} a las ${existingTime}. ¿Quiere añadir otra cita o cambiar la existente?`,\n    existingBooking: {\n      service: existingService,\n      time: existingTime\n    }\n  });\n}\n\n// No conflict - proceed to create booking\nconst createUrl = 'https://api.cal.com/v2/bookings';\n\ntry {\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: createUrl,\n    headers: {\n      'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88',\n      'cal-api-version': '2024-08-13',\n      'Content-Type': 'application/json'\n    },\n    body: {\n      eventTypeId: 3502752,\n      start: startUtc,\n      attendee: {\n        name: fullName,\n        email: email,\n        timeZone: 'Europe/Madrid',\n        phoneNumber: phone\n      },\n      lengthInMinutes: parseInt(duration, 10),\n      bookingFieldsResponses: {\n        service: service\n      }\n    },\n    json: true\n  });\n\n  return JSON.stringify({\n    success: true,\n    message: 'Cita creada correctamente.',\n    data: response\n  });\n\n} catch (error) {\n  return JSON.stringify({\n    success: false,\n    error: `Error al crear cita: ${error.message}`\n  });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"fullName\": \"Maria Garcia\",\n  \"phone\": \"+34 631 975 901\",\n  \"service\": \"Limpieza Dental\",\n  \"startUtc\": \"2025-12-17T09:00:00Z\",\n  \"duration\": 45\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        6560,
+        2688
+      ],
+      "id": "5db27a69-6d1f-4873-b913-42ee01248d64",
+      "name": "CREATE_BOOKING1"
+    },
+    {
+      "parameters": {
+        "content": "## WORKFLOW v5 - ENHANCED\n\n**Nuevas funcionalidades:**\n\n✅ **Multi-idioma:** ES, EN, AR\n✅ **Análisis de imágenes:** Fotos de boca, facturas, documentos\n✅ **Sugerencia de servicios:** Según síntomas descritos\n✅ **Prevención doble reserva:** Verifica antes de crear",
+        "height": 448,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3184,
+        2912
+      ],
+      "id": "dd8f19eb-8fcc-4231-b107-1439e799d3cb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v2/bookings",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"status\": [\"upcoming\"],\n  \"take\": 100,\n  \"afterStart\": \"{{$now.setZone('UTC').plus(1,'days') }}\",\n  \"beforeEnd\": \"{{$now.setZone('UTC').plus(40, 'hours')}}\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-08-13\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2000,
+        3744
+      ],
+      "id": "09f30650-c705-4ec1-b32f-d1627d248849",
+      "name": "FETCH ALL BOOKINGS",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the timestamp from \"EVERYDAY AT 8AM\" node and convert to UTC\nconst triggerData = $('EVERYDAY AT 8AM').first().json;\nconst triggerTimestamp = new Date(triggerData.timestamp);\n\n// Calculate the 24h-40h window from the trigger time\nconst window24h = new Date(triggerTimestamp.getTime() + (24 * 60 * 60 * 1000));\nconst window40h = new Date(triggerTimestamp.getTime() + (40 * 60 * 60 * 1000));\n\n// Get the bookings from the input\nconst inputData = $input.first().json;\nconst bookings = inputData.data || [];\nconst pagination = inputData.pagination || {};\n\n// Filter bookings:\n// 1. Status must be \"accepted\" (not cancelled)\n// 2. Start time must be between 24h and 40h from trigger\nconst filteredBookings = bookings.filter(booking => {\n  // Check status - only \"accepted\" can pass through\n  if (booking.status !== 'accepted') {\n    return false;\n  }\n  \n  // Parse the booking start time (already in UTC)\n  const bookingStart = new Date(booking.start);\n  \n  // Check if booking is within the 24h-40h window\n  return bookingStart >= window24h && bookingStart <= window40h;\n});\n\n// Build output array\nconst output = [];\n\n// First item: pagination and count (ALWAYS included)\noutput.push({\n  json: {\n    pagination: pagination,\n    filteredCount: filteredBookings.length\n  }\n});\n\n// If no bookings match, just return the first item with count\nif (filteredBookings.length === 0) {\n  return output;\n}\n\n// Following items: each booking without pagination\nfilteredBookings.forEach(booking => {\n  const startDate = new Date(booking.start);\n  \n  // Format for display in Spanish (Madrid timezone)\n  const dateOptions = {\n    weekday: 'long',\n    day: 'numeric',\n    month: 'long',\n    year: 'numeric',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const timeOptions = {\n    hour: '2-digit',\n    minute: '2-digit',\n    timeZone: 'Europe/Madrid'\n  };\n  \n  const formattedDate = startDate.toLocaleString('es-ES', dateOptions);\n  const formattedTime = startDate.toLocaleString('es-ES', timeOptions);\n  \n  // Get attendee info\n  const attendee = booking.attendees?.[0] || {};\n  const service = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  \n  output.push({\n    json: {\n      bookingId: booking.id,\n      bookingUid: booking.uid,\n      status: booking.status,\n      patientName: attendee.name || 'Paciente',\n      patientEmail: attendee.email || '',\n      patientPhone: attendee.phoneNumber || '',\n      service: service,\n      date: formattedDate,\n      time: formattedTime,\n      fullDateTime: `${formattedDate} a las ${formattedTime}`,\n      startUtc: booking.start,\n      endUtc: booking.end,\n      duration: booking.duration,\n      whatsappNumber: attendee.phoneNumber?.replace(/\\s+/g, '') || ''\n    }\n  });\n});\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        3744
+      ],
+      "id": "aea4d0b8-b3b2-467e-a1db-fe9cd242d2c0",
+      "name": "24H TRUE GUARDRAIL"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        3744
+      ],
+      "id": "5e4f92fd-5035-4ca2-8630-9483ad02c71d",
+      "name": "EVERYDAY AT 8AM"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2720,
+        3840
+      ],
+      "id": "a5f61cd2-f718-4ec5-a27e-aa0ee4a5b120",
+      "name": "NO APPOINTMENTS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all bookings from \"24H TRUE GUARDRAIL\", skipping the first item (pagination)\nconst bookings = $('24H TRUE GUARDRAIL').all().slice(1);\n\n// Clinic info\nconst clinicAddress = 'Carrer Pere Andreu, 18, Valencia';\nconst googleMapsLink = 'https://maps.google.com/?q=Carrer+Pere+Andreu+18+Valencia';\nconst clinicPhone = '+34 631 975 901';\n\n// Process each booking and build messages\nreturn bookings.map(item => {\n  const data = item.json;\n  \n  const messageES = `🔔 *Recordatorio de Cita*\n\nHola ${data.patientName},\n\nTe recordamos que tienes una cita mañana:\n\n📋 *Servicio:* ${data.service}\n📅 *Fecha:* ${data.fullDateTime}\n📍 *Dirección:* ${clinicAddress}\n🗺️ *Google Maps:* ${googleMapsLink}\n📞 *Teléfono:* ${clinicPhone}\n\n⏰ Por favor, llega 5 minutos antes de tu cita.\n\n¿Necesitas cambiar o cancelar? Responde a este mensaje o llámanos.\n\n— Clínica Dr. Ilyass`;\n\n  const messageEN = `🔔 *Appointment Reminder*\n\nHi ${data.patientName},\n\nThis is a reminder of your appointment tomorrow:\n\n📋 *Service:* ${data.service}\n📅 *Date:* ${data.fullDateTime}\n📍 *Address:* ${clinicAddress}\n🗺️ *Google Maps:* ${googleMapsLink}\n📞 *Phone:* ${clinicPhone}\n\n⏰ Please arrive 5 minutes before your appointment.\n\nNeed to reschedule or cancel? Reply to this message or call us.\n\n— Dr. Ilyass Clinic`;\n\n  const messageAR = `🔔 *تذكير بالموعد*\n\nمرحباً ${data.patientName}،\n\nنذكرك بموعدك غداً:\n\n📋 *الخدمة:* ${data.service}\n📅 *التاريخ:* ${data.fullDateTime}\n📍 *العنوان:* ${clinicAddress}\n🗺️ *خرائط جوجل:* ${googleMapsLink}\n📞 *الهاتف:* ${clinicPhone}\n\n⏰ يرجى الحضور قبل 5 دقائق من موعدك.\n\nهل تحتاج إلى تغيير أو إلغاء؟ رد على هذه الرسالة أو اتصل بنا.\n\n— عيادة الدكتور إلياس`;\n\n  return {\n    json: {\n      ...data,\n      clinicAddress,\n      googleMapsLink,\n      clinicPhone,\n      messageES,\n      messageEN,\n      messageAR,\n      // Use Spanish as default\n      message: messageES\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2720,
+        3664
+      ],
+      "id": "5fd92785-c516-468a-80da-0f4bb3a32697",
+      "name": "BUILD REMINDER MESSAGE"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.patientEmail }}",
+        "subject": "=Recordatorio Cita para {{ $json.patientName }}",
+        "emailType": "text",
+        "message": "={{ $json.messageES }}",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2944,
+        4000
+      ],
+      "id": "641d57af-a26b-47c5-a9a6-823d678b3388",
+      "name": "SEND REMINDER MESSAGE",
+      "webhookId": "1d5eb29d-d88e-4007-b62d-d950df1f46c9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "z8xF5lOZvn2NjBvZ",
+          "name": "GMAIL - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "771a37bb-b968-42f0-ba33-daed7d2f8fb5",
+              "leftValue": "={{ $json.filteredCount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2432,
+        3744
+      ],
+      "id": "8807c132-1b4f-4cd4-b51c-9969facccbf2",
+      "name": "DO WE HAVE APPOINTMENTS?"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        5712,
+        2688
+      ],
+      "id": "38275565-ad7a-4bf8-a514-2bc585f52ad7",
+      "name": "GPT 4o MINI",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 💰 Monthly Cost Estimate (GPT-4o-mini)\n\n**Pricing:**\n\nInput: $0.15 / 1M tokens\nOutput: $0.60 / 1M tokens\n\n**Per conversation:** ~9,000 input + ~800 output tokens\n\n**Estimated costs:**\n\n- 5 conv/day → ~$0.27/month\n- 10 conv/day → ~$0.55/month\n- 20 conv/day → ~$1.10/month\n- 50 conv/day → ~$2.75/month\n- 100 conv/day → ~$5.50/month\n- 200 conv/day → ~$11.00/month\n- 500 conv/day → ~$27.50/month\n\n💡 GPT-4o would cost ~17x more",
+        "height": 624,
+        "width": 544,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3184,
+        3376
+      ],
+      "id": "740a1dd3-8bd3-4621-8e0b-a516281b3f2f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 24H BEFORE APPOINTMENT REMINDER\n",
+        "height": 400,
+        "width": 1504,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        3600
+      ],
+      "id": "d85daa9a-96c6-4fdf-8739-77d7565e673f",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## APPOINTMENTS MANAGER AGENT\n",
+        "height": 672,
+        "width": 1504,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        2912
+      ],
+      "id": "03eba489-a3bd-4648-a3c5-d0b72f25faed",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        3104
+      ],
+      "id": "9e98a473-0205-4453-a487-0e7a1b97c345",
+      "name": "Telegram Trigger",
+      "webhookId": "2885646b-c7f7-45a7-9722-66b7dd4f6d46",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "50197cfa-b8f4-43d0-8e9c-963c54d7851e",
+      "name": "Get audio file",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        848,
+        3296
+      ],
+      "webhookId": "73d0d328-d75b-4bb0-a1b9-81d42a2f2bfd",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "8ddb901b-ae0c-4e34-8b8c-f535f16293dd",
+      "name": "Transcribe audio",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        848,
+        3824
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "a561aab7-4c3b-4c96-9bb7-078281b5c7d5",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": ""
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "b7f1055d-6651-416f-b0cd-c46e003d4f3a",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.message.voice }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "20052ec3-4d9a-45f2-91a5-dd464fd8a64f",
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1892461-d2a6-4313-97f6-3dc9e5a51b96",
+      "name": "Route Chat Input",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1552,
+        2992
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.photo[2].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        3456
+      ],
+      "id": "493456e8-cdfa-449e-92f9-8dd5f3820d0d",
+      "name": "Get a file",
+      "webhookId": "d178f119-b864-4863-ad12-35822e1b8235",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        3632
+      ],
+      "id": "19606d2d-ff2f-4d33-8b67-28f9253d72c8",
+      "name": "Send a text message",
+      "webhookId": "fa5ee4b3-2f62-4318-bce3-c31f56134d58",
+      "credentials": {
+        "telegramApi": {
+          "id": "ARMBK9GPeDjSYDIE",
+          "name": "Clínica Dr. Ilyass Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        2768
+      ],
+      "id": "f3811c6d-bea8-44d5-9e2c-091cee9e28fa",
+      "name": "WhatsApp Trigger",
+      "webhookId": "cfd0d549-26bd-4c08-bc59-dfe7a4d4b90c",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "wvIXLzMDMgSYUFn6",
+          "name": "WhatsApp OAuth - N8N app"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## WHATSAPP CREDENTIALS\n\n✅ **System user permanent token \"ilyass\"**\n\nEAAWLJjOkf6QBQe5faolVJFU4ZAOSK5ibZAWOBKaygoaUEGzfWQt1mjal2pTTkwvZAI00vYPfNGtFAR0EZC643qLvSZBCbMsFDblSbpQJAjLpTDTO7jGwR3NyJRGiDT0f839TZCGSda2rzVUspDYMuZBq0muX6EoRmIIATCZBAjb43ASsVdMj28jC86hUgDT5x9iFiQZDZD\n\n✅ **Client ID & Client Secret of the app \"N8N\"**\n\nClient ID: 1560371074989988\nClient secret: 6f3b0ba42f549f21974f7e921da5328d",
+        "height": 80,
+        "width": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        1312
+      ],
+      "id": "6a74625b-8f92-4b18-8244-9d9f2ffdc40e",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v22.0/843946438811717/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAAWLJjOkf6QBQe5faolVJFU4ZAOSK5ibZAWOBKaygoaUEGzfWQt1mjal2pTTkwvZAI00vYPfNGtFAR0EZC643qLvSZBCbMsFDblSbpQJAjLpTDTO7jGwR3NyJRGiDT0f839TZCGSda2rzVUspDYMuZBq0muX6EoRmIIATCZBAjb43ASsVdMj28jC86hUgDT5x9iFiQZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"messaging_product\": \"whatsapp\",\n  \"to\": \"34631975901\",\n  \"type\": \"template\",\n  \"template\": {\n    \"name\": \"hello_world\",\n    \"language\": {\n      \"code\": \"en_US\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2896,
+        2656
+      ],
+      "id": "64ec16b9-7cbc-49b5-8308-6b978dfdd362",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "843946438811717",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{$json.output}}",
+        "additionalFields": {
+          "previewUrl": false
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        6624,
+        2368
+      ],
+      "id": "563b74dd-311b-4af5-ad45-3793f6e6aa2e",
+      "name": "Send message",
+      "webhookId": "2b2a6e4c-a275-466e-b203-efdaca7050c2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "843946438811717",
+        "recipientPhoneNumber": "34631975901",
+        "textBody": "={{ $json.messageES }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2928,
+        3664
+      ],
+      "id": "b3a7e799-5d8f-4c43-98c3-a8c215d094e3",
+      "name": "Send message1",
+      "webhookId": "5d0a9191-c2dc-43a0-84ff-adf18fe61a3b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract message info from WhatsApp\nconst input = $input.first().json;\n\n// Check if this is a status update (not a message)\nif (!input.messages || input.messages.length === 0) {\n  return []; // Stop execution for status updates\n}\n\nconst waId = input.contacts[0].wa_id;\nconst message = input.messages[0];\nconst timestamp = Date.now();\nconst messageId = message.id;\n\n// Determine message type and extract content\nlet msgData = {\n  id: messageId,\n  timestamp: timestamp,\n  type: message.type\n};\n\nif (message.type === 'text') {\n  msgData.content = message.text.body;\n} else if (message.type === 'audio') {\n  msgData.mediaId = message.audio.id;\n  msgData.mimeType = message.audio.mime_type;\n} else if (message.type === 'voice') {\n  msgData.mediaId = message.voice.id;\n  msgData.mimeType = message.voice.mime_type;\n} else if (message.type === 'image') {\n  msgData.mediaId = message.image.id;\n  msgData.mimeType = message.image.mime_type;\n  msgData.caption = message.image.caption || '';\n} else if (message.type === 'document') {\n  msgData.mediaId = message.document.id;\n  msgData.mimeType = message.document.mime_type;\n  msgData.filename = message.document.filename || '';\n} else {\n  // Unsupported type, treat as text\n  msgData.content = '[Mensaje no soportado]';\n  msgData.type = 'text';\n}\n\nreturn [{\n  json: {\n    waId: waId,\n    timestamp: timestamp,\n    messageId: messageId,\n    msgData: msgData,\n    bufferKey: `buffer:${waId}`,\n    timerKey: `timer:${waId}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        2160
+      ],
+      "id": "748a7d76-f7f0-40f5-9b5e-edcaa71c345a",
+      "name": "Prepare Message"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $json.bufferKey }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        2160
+      ],
+      "id": "77e9784e-47b3-439d-a074-4ccf8dfb76ee",
+      "name": "Get Existing Buffer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the prepared message data\nconst prepData = $('Prepare Message').first().json;\nconst existingBuffer = $input.first().json.value;\n\n// Parse existing buffer or create new array\nlet buffer = [];\nif (existingBuffer) {\n  try {\n    buffer = JSON.parse(existingBuffer);\n  } catch (e) {\n    buffer = [];\n  }\n}\n\n// Add new message to buffer\nbuffer.push(prepData.msgData);\n\nreturn [{\n  json: {\n    waId: prepData.waId,\n    timestamp: prepData.timestamp,\n    bufferKey: prepData.bufferKey,\n    timerKey: prepData.timerKey,\n    bufferData: JSON.stringify(buffer),\n    messageCount: buffer.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        2368
+      ],
+      "id": "6d5b8705-f14c-401c-b646-ebad704142ef",
+      "name": "Add to Buffer"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Add to Buffer').first().json.bufferKey }}",
+        "value": "={{ $('Add to Buffer').first().json.bufferData }}",
+        "keyType": "string",
+        "expire": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        2368
+      ],
+      "id": "7792d1d9-e774-4552-afd4-dc9bce6e8b39",
+      "name": "Save Buffer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $('Add to Buffer').first().json.timerKey }}",
+        "value": "={{ $('Add to Buffer').first().json.timestamp }}",
+        "keyType": "string",
+        "expire": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4288,
+        2576
+      ],
+      "id": "410d7b3e-319c-404f-beeb-e25a66c23aac",
+      "name": "Set Timer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4512,
+        2576
+      ],
+      "id": "91952d26-c658-467f-844d-ed0acab35ca4",
+      "name": "Wait 5 Seconds",
+      "webhookId": "wait-webhook-id"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('Add to Buffer').first().json.timerKey }}",
+        "keyType": "string",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4288,
+        2784
+      ],
+      "id": "12b4c4f6-ef05-4817-a670-5f3e2bc9314f",
+      "name": "Get Timer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if this execution's timestamp matches the timer\nconst myTimestamp = $('Add to Buffer').first().json.timestamp;\nconst lastTimestamp = $input.first().json.value;\n\n// Convert both to strings for comparison\nconst myTimestampStr = String(myTimestamp);\nconst lastTimestampStr = String(lastTimestamp || '');\n\n// Debug - log both values\nconst isLast = lastTimestampStr === myTimestampStr;\n\nreturn [{\n  json: {\n    waId: $('Add to Buffer').first().json.waId,\n    bufferKey: $('Add to Buffer').first().json.bufferKey,\n    timerKey: $('Add to Buffer').first().json.timerKey,\n    isLast: isLast,\n    myTimestamp: myTimestampStr,\n    lastTimestamp: lastTimestampStr,\n    debug: `Comparing \"${myTimestampStr}\" with \"${lastTimestampStr}\"`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4512,
+        2784
+      ],
+      "id": "0fb6f71e-524f-4a05-8b12-2b176d44f9bf",
+      "name": "Am I Last Message?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-is-last",
+              "leftValue": "={{ $json.isLast }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4288,
+        3008
+      ],
+      "id": "1f232636-e902-4085-a7ba-bd769f1f40f5",
+      "name": "Is Last Message?"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $('Am I Last Message?').first().json.bufferKey }}",
+        "keyType": "string",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        3008
+      ],
+      "id": "467276ba-6d4d-419e-bc84-3568ef23f276",
+      "name": "Get Full Buffer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the buffer and separate message types\nconst bufferData = $input.first().json.value;\nconst waId = $('Am I Last Message?').first().json.waId;\n\nlet messages = [];\ntry {\n  messages = JSON.parse(bufferData);\n} catch (e) {\n  messages = [];\n}\n\n// Separate by type\nconst textMessages = messages.filter(m => m.type === 'text');\nconst voiceMessages = messages.filter(m => m.type === 'audio' || m.type === 'voice');\nconst imageMessages = messages.filter(m => m.type === 'image');\n\nreturn [{\n  json: {\n    waId: waId,\n    bufferKey: $('Am I Last Message?').first().json.bufferKey,\n    timerKey: $('Am I Last Message?').first().json.timerKey,\n    allMessages: messages,\n    textMessages: textMessages,\n    voiceMessages: voiceMessages,\n    imageMessages: imageMessages,\n    hasVoice: voiceMessages.length > 0,\n    hasImage: imageMessages.length > 0,\n    totalCount: messages.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4736,
+        3008
+      ],
+      "id": "cb6b0931-e21c-43db-9c9c-c586b68e5b5a",
+      "name": "Parse Buffer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-voice",
+              "leftValue": "={{ $json.hasVoice }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4720,
+        2368
+      ],
+      "id": "8c5e0e02-a89f-4553-bd4c-b49cf8dfea31",
+      "name": "Has Voice?"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        5392,
+        2176
+      ],
+      "id": "cd612e05-b5d7-4c63-89f8-d0430d53c39b",
+      "name": "Transcribe Voice",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-image",
+              "leftValue": "={{ $('Parse Buffer').item.json.hasImage }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5168,
+        2464
+      ],
+      "id": "6614addd-85a1-4ba2-b7fd-046893516968",
+      "name": "Has Image?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine all messages into one input for the agent\nconst parseData = $('Parse Buffer').first().json;\n\n// Try to get transcription if voice was processed\nlet transcription = '';\ntry {\n  transcription = $('Transcribe Voice').first()?.json?.text || '';\n} catch (e) {\n  transcription = '';\n}\n\n// Build combined text input\nlet combinedParts = [];\n\n// Add all text messages\nparseData.textMessages.forEach(m => {\n  if (m.content) {\n    combinedParts.push(m.content);\n  }\n});\n\n// Add transcription if exists\nif (transcription) {\n  combinedParts.push(`[Audio]: ${transcription}`);\n}\n\n// Add image captions\nparseData.imageMessages.forEach(m => {\n  if (m.caption) {\n    combinedParts.push(`[Imagen]: ${m.caption}`);\n  }\n});\n\n// Combine everything\nconst combinedInput = combinedParts.join('\\n').trim() || 'Hola';\n\nreturn [{\n  json: {\n    waId: parseData.waId,\n    bufferKey: parseData.bufferKey,\n    timerKey: parseData.timerKey,\n    combinedInput: combinedInput,\n    hasImage: parseData.hasImage,\n    messageCount: parseData.totalCount\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5616,
+        2368
+      ],
+      "id": "adc02653-48b1-4ae8-b90b-715ceb0cfc6f",
+      "name": "Combine All Input"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        8384,
+        2288
+      ],
+      "id": "69c47032-de5e-44cf-b21f-69bec86818ab",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4512,
+        3200
+      ],
+      "id": "5eb77fbe-b90a-477f-98c3-b90c4685c623",
+      "name": "Stop (Not Last)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// No voice - pass through data\nreturn [{\n  json: {\n    ...$('Parse Buffer').first().json,\n    transcription: ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4944,
+        2464
+      ],
+      "id": "ac4f90ce-c328-4268-9e0d-4244931e22d2",
+      "name": "No Voice"
+    },
+    {
+      "parameters": {
+        "jsCode": "// No image - pass through\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5392,
+        2560
+      ],
+      "id": "4be44bed-431d-4165-a1fa-0b687ee03dfc",
+      "name": "No Image"
+    },
+    {
+      "parameters": {
+        "content": "## 📱 WhatsApp Buffer Flow\n\n**How it works:**\n1. Message arrives → stored in Redis buffer\n2. Timer set/reset to current timestamp\n3. Wait 5 seconds\n4. Check if more messages arrived\n5. If last message → process all buffered messages\n6. Transcribe voice, download images\n7. Combine into single input\n8. Send to Agent\n9. Reply to user\n10. Clear buffer\n\n**Replace these before using:**\n- YOUR_REDIS_CREDENTIAL_ID\n- YOUR_OPENAI_CREDENTIAL_ID\n- YOUR_WHATSAPP_AUTH_ID\n- YOUR_PHONE_NUMBER_ID",
+        "height": 476,
+        "width": 976,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4016,
+        1584
+      ],
+      "id": "1bb97a7e-2209-42e9-9c0d-49fb78c1bd22",
+      "name": "Instructions"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        4064,
+        2160
+      ],
+      "id": "b5420bc4-c739-46f8-bca1-93b2d346b14c",
+      "name": "WhatsApp Trigger1",
+      "webhookId": "whatsapp-webhook-id",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "wvIXLzMDMgSYUFn6",
+          "name": "WhatsApp OAuth - N8N app"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedInput }}",
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n---\n\n## 🌍 MULTI-IDIOMA\n\n**Detecta el idioma del usuario y responde en ese idioma:**\n- Español → responde en español\n- English → respond in English\n- العربية → أجب بالعربية\n\n---\n\n## 👤 Identidad\n\nSara, 25 años, recepcionista real (nunca IA). Profesional, cercana y empática.\n\n**Comunicación:**\n- Tono natural: \"¡Genial!\", \"Vale\", \"Perfecto\"\n- Una pregunta por mensaje (máx 3 frases)\n- Fechas con mes: \"martes 15 de octubre a las 10:00\"\n- Nunca menciones zonas horarias ni UTC\n\n---\n\n## 🏥 Clínica\n\n- **Dirección:** Carrer Pere Andreu, 18, Valencia\n- **Horario:** Lunes a viernes 9:00–17:00\n- **Teléfono:** +34 631 975 901\n- **Cancelación:** gratis >48h, 10€ si <48h\n\n**Servicios:**\n- Limpieza Dental — 45 min\n- Estética Dental — 75 min\n- Eliminación de Caries — 50 min\n- Consulta General — 30 min\n\n**HORA ACTUAL:** {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy HH:mm', { locale: 'es' })}}\n\n---\n\n## 📋 Datos del paciente\n\n- Para CREAR cita → pide nombre, email y teléfono\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo email\n- Si dan 9 dígitos → añade +34 automáticamente\n\n---\n\n## 📸 IMÁGENES\n\nSi el usuario envía imagen de boca/dientes:\n- Describe lo que ves (sin diagnosticar)\n- Sugiere servicio apropiado\n- Ofrece reservar cita\n\n---\n\n## 🔧 Herramientas\n\n- **CHECK FREE SLOTS** → busca disponibilidad\n- **CREATE_BOOKING** → crea cita (verifica doble reserva)\n- **GET_BOOKINGS** → busca citas por email\n- **RESCHEDULE_BOOKING** → reprograma\n- **CANCEL_BOOKING** → cancela\n\n---\n\n## ⚠️ Reglas\n\n- SIEMPRE llama GET_BOOKINGS antes de RESCHEDULE o CANCEL\n- Confirma resumen antes de acciones definitivas\n- Nunca muestres datos técnicos (UIDs, UTC)\n- Si hay error → sugiere alternativas",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        8576,
+        2064
+      ],
+      "id": "efca0204-1c94-4e31-bb9e-9b4fb11814b8",
+      "name": "AGENTE SARA1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Combine All Input').item.json.waId }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        8576,
+        2288
+      ],
+      "id": "266b5c03-92a2-4dd8-bbb2-42b758230b19",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "description": "Busca las citas de un paciente por email.",
+        "jsCode": "let email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({ success: false, error: error.message });\n}\n\nconst bookings = data.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({ success: true, found: false, message: 'No hay citas activas.', bookings: [] });\n}\n\nconst formattedBookings = activeBookings.map((booking, index) => {\n  const startDate = new Date(booking.start);\n  const formattedDate = startDate.toLocaleString('es-ES', {\n    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'\n  });\n  const serviceName = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  return `${index + 1}. ${serviceName} - ${formattedDate}`;\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s):`,\n  bookings: formattedBookings\n});",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        8752,
+        2288
+      ],
+      "id": "14578c31-b0d6-40df-9bdf-39a17efccaee",
+      "name": "GET_BOOKINGS2"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Check available slots for a date and service",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI('startDate', 'YYYY-MM-DD')}}\",\n  \"end\": \"{{$fromAI('endDate', 'YYYY-MM-DD, día siguiente al start')}}\",\n  \"duration\": \"{{$fromAI('duration', '30, 45, 50 o 75')}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        8928,
+        2288
+      ],
+      "id": "d22849e7-36c6-4349-b648-115581c03155",
+      "name": "CHECK FREE SLOTS1"
+    },
+    {
+      "parameters": {
+        "description": "Crea una cita nueva. Verifica doble reserva automáticamente.",
+        "jsCode": "let email, fullName, phone, service, startUtc, duration;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  fullName = query.fullName;\n  phone = query.phone;\n  service = query.service;\n  startUtc = query.startUtc;\n  duration = query.duration;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    fullName = input.fullName;\n    phone = input.phone;\n    service = input.service;\n    startUtc = input.startUtc;\n    duration = input.duration;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !fullName || !phone || !service || !startUtc || !duration) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\n// Check for double booking\nconst requestedDate = startUtc.split('T')[0];\nlet existing;\ntry {\n  existing = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  existing = { data: [] };\n}\n\nconst active = (existing.data || []).filter(b => b.status === 'accepted');\nconst sameDay = active.find(b => b.start.split('T')[0] === requestedDate);\n\nif (sameDay) {\n  const t = new Date(sameDay.start).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  return JSON.stringify({ success: false, doubleBooking: true, message: `Ya tiene cita a las ${t} ese día.` });\n}\n\n// Create booking\ntry {\n  const resp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.cal.com/v2/bookings',\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: {\n      eventTypeId: 3502752,\n      start: startUtc,\n      attendee: { name: fullName, email: email, timeZone: 'Europe/Madrid', phoneNumber: phone },\n      lengthInMinutes: parseInt(duration),\n      bookingFieldsResponses: { service: service }\n    },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita creada correctamente.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Horario no disponible.' });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"fullName\": \"Maria Garcia\",\n  \"phone\": \"+34631975901\",\n  \"service\": \"Limpieza Dental\",\n  \"startUtc\": \"2025-12-17T09:00:00Z\",\n  \"duration\": 45\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        9104,
+        2288
+      ],
+      "id": "7ce8b0bf-a63a-4e0f-89be-b09ab73aabe2",
+      "name": "CREATE_BOOKING2"
+    },
+    {
+      "parameters": {
+        "description": "Reprograma una cita existente.",
+        "jsCode": "let email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !bookingNumber || !newStartUtc) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\n\n// Get bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al buscar.' });\n}\n\nconst active = (listData.data || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return JSON.stringify({ success: false, error: 'No hay citas activas.' });\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return JSON.stringify({ success: false, error: `No existe cita ${bookingNumber}.` });\n}\n\nconst uid = active[idx].uid;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/reschedule`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { start: newStartUtc, rescheduledBy: 'ilyassennajielghabi@gmail.com', reschedulingReason: '' },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita reprogramada.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al reprogramar.' });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\", \"bookingNumber\": 1, \"newStartUtc\": \"2025-12-18T10:00:00Z\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        9296,
+        2288
+      ],
+      "id": "3322a73e-2e01-4e09-a7e7-8012364d3229",
+      "name": "RESCHEDULE_BOOKING2"
+    },
+    {
+      "parameters": {
+        "description": "Cancela una cita existente.",
+        "jsCode": "let email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !bookingNumber) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\nif (!reason) reason = 'Cancelado por paciente';\n\n// Get bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al buscar.' });\n}\n\nconst active = (listData.data || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return JSON.stringify({ success: false, error: 'No hay citas activas.' });\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return JSON.stringify({ success: false, error: `No existe cita ${bookingNumber}.` });\n}\n\nconst uid = active[idx].uid;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/cancel`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { cancellationReason: reason },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita cancelada.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al cancelar.' });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\", \"bookingNumber\": 1, \"reason\": \"No puedo asistir\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        9472,
+        2288
+      ],
+      "id": "d5e7ccda-7243-4c17-9eb7-8c3dae1a0543",
+      "name": "CANCEL_BOOKING2"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('Parse Buffer').item.json.imageMessages[0].mediaId }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        5392,
+        2368
+      ],
+      "id": "79b456b0-10c6-401e-a811-277bb837baae",
+      "name": "Download Images",
+      "webhookId": "48e4b2a6-44e3-4409-b486-4249ccdc9203",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('Parse Buffer').item.json.voiceMessages[0].mediaId }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        5168,
+        2176
+      ],
+      "id": "9f10bd42-a158-43b3-aac1-319ec17c1668",
+      "name": "Download Audios",
+      "webhookId": "dd8ce3b8-c497-42d4-850e-78ea5383d118",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Combine All Input').item.json.bufferKey }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        6848,
+        2368
+      ],
+      "id": "b78c0763-eef9-42fb-9da9-0253c0e983da",
+      "name": "Clear Buffer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Combine All Input').item.json.timerKey }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        7056,
+        2368
+      ],
+      "id": "a33b872e-d22e-4703-b43e-9cb3c0c5b482",
+      "name": "Clear Timer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "FETCH ALL BOOKINGS": [
+      {
+        "json": {
+          "status": "success",
+          "data": [
+            {
+              "id": 13803496,
+              "uid": "nznmjXokLWXtVP1BDJUfjp",
+              "title": "Consulta General - Mustapha Ennaji",
+              "description": "",
+              "hosts": [
+                {
+                  "id": 1799792,
+                  "name": "Ilyass Ennaji El Ghabi",
+                  "email": "ilyassennajielghabi@gmail.com",
+                  "username": "ilyass-ennaji-el-ghabi",
+                  "timeZone": "Europe/Madrid"
+                }
+              ],
+              "status": "accepted",
+              "cancellationReason": "",
+              "cancelledByEmail": "",
+              "reschedulingReason": "",
+              "rescheduledByEmail": "ilyassennajielghabi@gmail.com",
+              "rescheduledFromUid": "8YpGYv6EgXdYxSLoBQqFvg",
+              "start": "2025-12-16T08:30:00.000Z",
+              "end": "2025-12-16T09:15:00.000Z",
+              "duration": 45,
+              "eventTypeId": 3502752,
+              "eventType": {
+                "id": 3502752,
+                "slug": "n8n-appointments"
+              },
+              "meetingUrl": "attendeeInPerson",
+              "location": "attendeeInPerson",
+              "absentHost": false,
+              "createdAt": "2025-12-15T20:50:19.698Z",
+              "updatedAt": "2025-12-15T20:50:20.687Z",
+              "metadata": {},
+              "rating": null,
+              "icsUid": "8YpGYv6EgXdYxSLoBQqFvg@Cal.com",
+              "attendees": [
+                {
+                  "name": "Mustapha Ennaji",
+                  "email": "ilyass@gastrosomnis.es",
+                  "timeZone": "Europe/Madrid",
+                  "language": "en",
+                  "absent": false,
+                  "phoneNumber": "+34 842 904 923"
+                }
+              ],
+              "bookingFieldsResponses": {
+                "email": "ilyass@gastrosomnis.es",
+                "attendeePhoneNumber": "+34 842 904 923",
+                "name": "Mustapha Ennaji",
+                "service": "Consulta General",
+                "rescheduledReason": ""
+              }
+            }
+          ],
+          "pagination": {
+            "returnedItems": 1,
+            "totalItems": 1,
+            "itemsPerPage": 100,
+            "remainingItems": 0,
+            "currentPage": 1,
+            "totalPages": 1,
+            "hasNextPage": false,
+            "hasPreviousPage": false
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "WhatsApp Trigger": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551713926",
+            "phone_number_id": "843946438811717"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Ilyass"
+              },
+              "wa_id": "34631975901"
+            }
+          ],
+          "messages": [
+            {
+              "from": "34631975901",
+              "id": "wamid.HBgLMzQ2MzE5NzU5MDEVAgASGBYzRUIwQkNEMURGNDgxMEI5MTI2M0Y0AA==",
+              "timestamp": "1766487090",
+              "type": "image",
+              "image": {
+                "caption": "es que miralo tu misma",
+                "mime_type": "image/jpeg",
+                "sha256": "aS1/xWtlCW1X6fhE1NkyhoW8fX1GLDHAXFHAzUnoE7w=",
+                "id": "1593384274988835",
+                "url": "https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=1593384274988835&source=webhook&ext=1766487391&hash=ARkbE274f49D5j9uvL_UHLxZQNc-qSWPcUlb1cub9oP_bQ"
+              }
+            }
+          ],
+          "field": "messages"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "WhatsApp Trigger1": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551713926",
+            "phone_number_id": "843946438811717"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Ilyass"
+              },
+              "wa_id": "34631975901"
+            }
+          ],
+          "messages": [
+            {
+              "from": "34631975901",
+              "id": "wamid.HBgLMzQ2MzE5NzU5MDEVAgASGBYzRUIwRkQwRjg5QUJFOUREOTg3Njc2AA==",
+              "timestamp": "1766491503",
+              "text": {
+                "body": "que tal"
+              },
+              "type": "text"
+            }
+          ],
+          "field": "messages"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Madrid",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-11T15:46:18.689Z",
+      "createdAt": "2025-12-11T15:46:18.689Z",
+      "role": "workflow:owner",
+      "workflowId": "xCjnLJd2lUOf8DvL",
+      "projectId": "8dA9Em61CLw7Lgze"
+    }
+  ],
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Every Hour": {
+      "recurrenceRules": []
+    },
+    "node:EVERYDAY AT 8AM": {
+      "recurrenceRules": []
+    }
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-11T15:09:34.313Z",
+      "createdAt": "2025-12-11T15:09:34.313Z",
+      "id": "qXeon9T5ZTHVJuNt",
+      "name": "GENERAL"
+    }
+  ],
+  "triggerCount": 3,
+  "updatedAt": "2025-12-23T12:24:12.371Z",
+  "versionId": "bde8a449-a52b-4d1b-a8dc-91dda16383bc"
+}
