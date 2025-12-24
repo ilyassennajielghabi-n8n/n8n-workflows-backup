@@ -1,0 +1,1263 @@
+{
+  "active": true,
+  "activeVersion": {
+    "updatedAt": "2025-12-23T14:57:29.732Z",
+    "createdAt": "2025-12-23T14:57:29.732Z",
+    "versionId": "5cd1639d-2eb9-48da-b171-2aefbfdac6ee",
+    "workflowId": "pVrZi548rROsYiKD",
+    "nodes": [
+      {
+        "parameters": {
+          "updates": [
+            "messages"
+          ],
+          "options": {}
+        },
+        "type": "n8n-nodes-base.whatsAppTrigger",
+        "typeVersion": 1,
+        "position": [
+          2112,
+          -432
+        ],
+        "id": "4ba4e9c5-a961-4174-ad23-13fd86c498bd",
+        "name": "WhatsApp Trigger",
+        "webhookId": "whatsapp-sara-webhook",
+        "credentials": {
+          "whatsAppTriggerApi": {
+            "id": "wvIXLzMDMgSYUFn6",
+            "name": "WhatsApp OAuth - N8N app"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "audio",
+          "operation": "transcribe",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          3376,
+          -464
+        ],
+        "id": "bb8fd282-3e8a-42d1-ac34-b6bfe999a4ba",
+        "name": "Transcribe Voice",
+        "alwaysOutputData": true,
+        "credentials": {
+          "openAiApi": {
+            "id": "AizjuaSCBXV5HAMG",
+            "name": "OPENAI - marketing"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conversationKey": "={{ $json.contacts[0].wa_id }}",
+          "messageField": "={{ $json.messages?.[0]?.text?.body ? 'text:' + $json.messages[0].text.body : $json.messages?.[0]?.audio?.id ? 'audio:' + $json.messages[0].audio.id : $json.messages?.[0]?.image?.id ? 'image:' + $json.messages[0].image.id : '' }}",
+          "outputFieldName": "AllMessagesTogether",
+          "waitTime": 15
+        },
+        "type": "n8n-nodes-message-buffer.messageBuffer",
+        "typeVersion": 1,
+        "position": [
+          2400,
+          -448
+        ],
+        "id": "4ca085ae-e3be-471e-b469-70c5f2aa879a",
+        "name": "Message Buffer",
+        "credentials": {
+          "redis": {
+            "id": "tPDqWS12P6dqeuXU",
+            "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 15
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          2608,
+          -288
+        ],
+        "id": "9d0cff19-cae1-44a7-be02-72b85724f8e4",
+        "name": "Wait",
+        "webhookId": "49ce9031-b81a-4fe2-bd79-3d846aa0d2d4"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.url }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "whatsAppApi",
+          "options": {
+            "response": {
+              "response": {}
+            }
+          }
+        },
+        "id": "042db887-2ecd-4311-9d96-841496f46e42",
+        "name": "Download Img",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          3872,
+          -464
+        ],
+        "typeVersion": 4.2,
+        "alwaysOutputData": true,
+        "credentials": {
+          "whatsAppApi": {
+            "id": "5KmzbDiUDcN6NpE6",
+            "name": "WhatsApp API - N8N app"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.url }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "whatsAppApi",
+          "options": {
+            "response": {
+              "response": {}
+            }
+          }
+        },
+        "id": "a145087e-1d26-4383-8bac-1606d32f53de",
+        "name": "Download Audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          3168,
+          -464
+        ],
+        "typeVersion": 4.2,
+        "alwaysOutputData": true,
+        "credentials": {
+          "whatsAppApi": {
+            "id": "5KmzbDiUDcN6NpE6",
+            "name": "WhatsApp API - N8N app"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "resource": "media",
+          "operation": "mediaUrlGet",
+          "mediaGetId": "={{ $('Parse Messages').item.json.imageIds[0] }}"
+        },
+        "type": "n8n-nodes-base.whatsApp",
+        "typeVersion": 1.1,
+        "position": [
+          3632,
+          -464
+        ],
+        "id": "a57e53c3-d761-4abf-82b6-0d95ea6313b0",
+        "name": "Download media1",
+        "webhookId": "890aad3b-400c-44e2-9eb3-8ea020a1ba86",
+        "alwaysOutputData": true,
+        "credentials": {
+          "whatsAppApi": {
+            "id": "5KmzbDiUDcN6NpE6",
+            "name": "WhatsApp API - N8N app"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const parsed = $('Code in JavaScript').first().json;\n\nlet transcription = '';\ntry {\n  transcription = $('Transcribe Voice').first()?.json?.text || '';\n} catch (e) {}\n\nlet parts = [];\nif (parsed.textContent) parts.push(parsed.textContent);\nif (transcription) parts.push(`[Audio]: ${transcription}`);\nif (parsed.hasImage) parts.push('[El usuario envió una imagen]');\n\nconst combinedInput = parts.join('\\n') || 'Hola';\n\n// Pass through any binary that came into this node\nconst inputBinary = $input.first().binary || {};\n\nreturn [{\n  json: {\n    waId: parsed.waId,\n    combinedInput: combinedInput,\n    hasImage: parsed.hasImage\n  },\n  binary: inputBinary\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4080,
+          -464
+        ],
+        "id": "b5933986-eb50-4f86-aa48-9a77de508d69",
+        "name": "Combine All"
+      },
+      {
+        "parameters": {
+          "jsCode": "const allMessages = $json.allMessages || [];\nconst waId = $json.wa_id;\n\nconst texts = [];\nconst audioIds = [];\nconst imageIds = [];\n\nallMessages.forEach(msg => {\n  if (msg.startsWith('text:')) {\n    texts.push(msg.replace('text:', ''));\n  } else if (msg.startsWith('audio:')) {\n    audioIds.push(msg.replace('audio:', ''));\n  } else if (msg.startsWith('image:')) {\n    imageIds.push(msg.replace('image:', ''));\n  }\n});\n\nreturn [{\n  json: {\n    waId: waId,\n    texts: texts,\n    audioIds: audioIds,\n    imageIds: imageIds,\n    audioId: audioIds[0] || null,  // First audio\n    imageId: imageIds[0] || null,  // First image\n    hasAudio: audioIds.length > 0,\n    hasImage: imageIds.length > 0,\n    textContent: texts.join('\\n')\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2752,
+          -464
+        ],
+        "id": "c491f414-bfc3-491a-a18e-6d1e887b046b",
+        "name": "Parse Messages"
+      },
+      {
+        "parameters": {
+          "resource": "media",
+          "operation": "mediaUrlGet",
+          "mediaGetId": "={{ $json.audioIds[0] }}"
+        },
+        "type": "n8n-nodes-base.whatsApp",
+        "typeVersion": 1.1,
+        "position": [
+          2960,
+          -464
+        ],
+        "id": "69d90ea9-7129-4a31-b2ea-15c9ba8fa48f",
+        "name": "Download media2",
+        "webhookId": "890aad3b-400c-44e2-9eb3-8ea020a1ba86",
+        "executeOnce": false,
+        "alwaysOutputData": true,
+        "credentials": {
+          "whatsAppApi": {
+            "id": "5KmzbDiUDcN6NpE6",
+            "name": "WhatsApp API - N8N app"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4o-mini"
+          },
+          "options": {
+            "temperature": 0
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          3536,
+          96
+        ],
+        "id": "3ba3b86d-6dd9-4e0b-bed5-d555429e1ecf",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "AizjuaSCBXV5HAMG",
+            "name": "OPENAI - marketing"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.combinedInput }}",
+          "options": {
+            "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n---\n\n## 🌍 MULTI-IDIOMA\n\n**Detecta el idioma del usuario y responde en ese idioma:**\n- Español → responde en español\n- English → respond in English\n- العربية → أجب بالعربية\n\n---\n\n## 👤 Identidad\n\nSara, 25 años, recepcionista real (nunca IA). Profesional, cercana y empática.\n\n**Comunicación:**\n- Tono natural: \"¡Genial!\", \"Vale\", \"Perfecto\"\n- Una pregunta por mensaje (máx 3 frases)\n- Fechas con mes: \"martes 15 de octubre a las 10:00\"\n- Nunca menciones zonas horarias ni UTC\n\n---\n\n## 🏥 Clínica\n\n- **Dirección:** Carrer Pere Andreu, 18, Valencia\n- **Horario:** Lunes a viernes 9:00–17:00\n- **Teléfono:** +34 631 975 901\n- **Cancelación:** gratis >48h, 10€ si <48h\n\n**Servicios:**\n- Limpieza Dental — 45 min\n- Estética Dental — 75 min\n- Eliminación de Caries — 50 min\n- Consulta General — 30 min\n\n**HORA ACTUAL:** {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy HH:mm', { locale: 'es' })}}\n\n---\n\n## 📋 Datos del paciente\n\n- Para CREAR cita → pide nombre, email y teléfono\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo email\n- Si dan 9 dígitos → añade +34 automáticamente\n\n---\n\n## 📸 IMÁGENES\n\nSi el usuario envía imagen de boca/dientes:\n- Describe lo que ves (sin diagnosticar)\n- Sugiere servicio apropiado\n- Ofrece reservar cita\n\n---\n\n## 🔧 Herramientas\n\n- **CHECK FREE SLOTS** → busca disponibilidad\n- **CREATE_BOOKING** → crea cita (verifica doble reserva)\n- **GET_BOOKINGS** → busca citas por email\n- **RESCHEDULE_BOOKING** → reprograma\n- **CANCEL_BOOKING** → cancela\n\n---\n\n## ⚠️ Reglas\n\n- SIEMPRE llama GET_BOOKINGS antes de RESCHEDULE o CANCEL\n- Confirma resumen antes de acciones definitivas\n- Nunca muestres datos técnicos (UIDs, UTC)\n- Si hay error → sugiere alternativas",
+            "passthroughBinaryImages": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          3728,
+          -128
+        ],
+        "id": "6b5ac1bc-7207-4e35-958b-5cfb03db71b3",
+        "name": "AGENTE SARA1"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+          "contextWindowLength": 50
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          3728,
+          96
+        ],
+        "id": "c369bd77-1d23-4b53-9042-a6b05db1398e",
+        "name": "Simple Memory1"
+      },
+      {
+        "parameters": {
+          "description": "Busca las citas de un paciente por email.",
+          "jsCode": "let email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({ success: false, error: error.message });\n}\n\nconst bookings = data.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({ success: true, found: false, message: 'No hay citas activas.', bookings: [] });\n}\n\nconst formattedBookings = activeBookings.map((booking, index) => {\n  const startDate = new Date(booking.start);\n  const formattedDate = startDate.toLocaleString('es-ES', {\n    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'\n  });\n  const serviceName = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  return `${index + 1}. ${serviceName} - ${formattedDate}`;\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s):`,\n  bookings: formattedBookings\n});",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\" }"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          3904,
+          96
+        ],
+        "id": "00a2cd74-96fa-460e-8fff-865ba6a58b5d",
+        "name": "GET_BOOKINGS2"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Check available slots for a date and service",
+          "url": "https://api.cal.com/v2/slots",
+          "sendQuery": true,
+          "specifyQuery": "json",
+          "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI('startDate', 'YYYY-MM-DD')}}\",\n  \"end\": \"{{$fromAI('endDate', 'YYYY-MM-DD, día siguiente al start')}}\",\n  \"duration\": \"{{$fromAI('duration', '30, 45, 50 o 75')}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          4080,
+          96
+        ],
+        "id": "109d5982-af61-4c27-8076-59220c3e2aff",
+        "name": "CHECK FREE SLOTS1"
+      },
+      {
+        "parameters": {
+          "description": "Crea una cita nueva. Verifica doble reserva automáticamente.",
+          "jsCode": "let email, fullName, phone, service, startUtc, duration;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  fullName = query.fullName;\n  phone = query.phone;\n  service = query.service;\n  startUtc = query.startUtc;\n  duration = query.duration;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    fullName = input.fullName;\n    phone = input.phone;\n    service = input.service;\n    startUtc = input.startUtc;\n    duration = input.duration;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !fullName || !phone || !service || !startUtc || !duration) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\n// Check for double booking\nconst requestedDate = startUtc.split('T')[0];\nlet existing;\ntry {\n  existing = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  existing = { data: [] };\n}\n\nconst active = (existing.data || []).filter(b => b.status === 'accepted');\nconst sameDay = active.find(b => b.start.split('T')[0] === requestedDate);\n\nif (sameDay) {\n  const t = new Date(sameDay.start).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  return JSON.stringify({ success: false, doubleBooking: true, message: `Ya tiene cita a las ${t} ese día.` });\n}\n\n// Create booking\ntry {\n  const resp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.cal.com/v2/bookings',\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: {\n      eventTypeId: 3502752,\n      start: startUtc,\n      attendee: { name: fullName, email: email, timeZone: 'Europe/Madrid', phoneNumber: phone },\n      lengthInMinutes: parseInt(duration),\n      bookingFieldsResponses: { service: service }\n    },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita creada correctamente.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Horario no disponible.' });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"fullName\": \"Maria Garcia\",\n  \"phone\": \"+34631975901\",\n  \"service\": \"Limpieza Dental\",\n  \"startUtc\": \"2025-12-17T09:00:00Z\",\n  \"duration\": 45\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          4256,
+          96
+        ],
+        "id": "63ed51b8-221c-43b9-a511-6d4fd0fdee0a",
+        "name": "CREATE_BOOKING2"
+      },
+      {
+        "parameters": {
+          "description": "Reprograma una cita existente.",
+          "jsCode": "let email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !bookingNumber || !newStartUtc) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\n\n// Get bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al buscar.' });\n}\n\nconst active = (listData.data || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return JSON.stringify({ success: false, error: 'No hay citas activas.' });\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return JSON.stringify({ success: false, error: `No existe cita ${bookingNumber}.` });\n}\n\nconst uid = active[idx].uid;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/reschedule`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { start: newStartUtc, rescheduledBy: 'ilyassennajielghabi@gmail.com', reschedulingReason: '' },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita reprogramada.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al reprogramar.' });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\", \"bookingNumber\": 1, \"newStartUtc\": \"2025-12-18T10:00:00Z\" }"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          4448,
+          96
+        ],
+        "id": "344f7e62-14c0-48f3-afe8-3d7f25d03d7a",
+        "name": "RESCHEDULE_BOOKING2"
+      },
+      {
+        "parameters": {
+          "description": "Cancela una cita existente.",
+          "jsCode": "let email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !bookingNumber) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\nif (!reason) reason = 'Cancelado por paciente';\n\n// Get bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al buscar.' });\n}\n\nconst active = (listData.data || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return JSON.stringify({ success: false, error: 'No hay citas activas.' });\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return JSON.stringify({ success: false, error: `No existe cita ${bookingNumber}.` });\n}\n\nconst uid = active[idx].uid;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/cancel`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { cancellationReason: reason },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita cancelada.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al cancelar.' });\n}",
+          "specifyInputSchema": true,
+          "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\", \"bookingNumber\": 1, \"reason\": \"No puedo asistir\" }"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolCode",
+        "typeVersion": 1.3,
+        "position": [
+          4624,
+          96
+        ],
+        "id": "12450720-89c8-4dfc-9dd3-fce5c66b45ae",
+        "name": "CANCEL_BOOKING2"
+      },
+      {
+        "parameters": {
+          "operation": "send",
+          "phoneNumberId": "843946438811717",
+          "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+          "textBody": "={{$json.output}}",
+          "additionalFields": {
+            "previewUrl": false
+          }
+        },
+        "type": "n8n-nodes-base.whatsApp",
+        "typeVersion": 1.1,
+        "position": [
+          4192,
+          -128
+        ],
+        "id": "9447f8e7-e3aa-4554-ac2f-4e5602994481",
+        "name": "Send message",
+        "webhookId": "2b2a6e4c-a275-466e-b203-efdaca7050c2",
+        "credentials": {
+          "whatsAppApi": {
+            "id": "5KmzbDiUDcN6NpE6",
+            "name": "WhatsApp API - N8N app"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "WhatsApp Trigger": {
+        "main": [
+          [
+            {
+              "node": "Message Buffer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Transcribe Voice": {
+        "main": [
+          [
+            {
+              "node": "Download media1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message Buffer": {
+        "main": [
+          [
+            {
+              "node": "Parse Messages",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Message Buffer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Audio": {
+        "main": [
+          [
+            {
+              "node": "Transcribe Voice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download media1": {
+        "main": [
+          [
+            {
+              "node": "Download Img",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Img": {
+        "main": [
+          [
+            {
+              "node": "Combine All",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Messages": {
+        "main": [
+          [
+            {
+              "node": "Download media2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download media2": {
+        "main": [
+          [
+            {
+              "node": "Download Audio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory1": {
+        "ai_memory": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET_BOOKINGS2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CHECK FREE SLOTS1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CREATE_BOOKING2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RESCHEDULE_BOOKING2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CANCEL_BOOKING2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Combine All": {
+        "main": [
+          [
+            {
+              "node": "AGENTE SARA1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AGENTE SARA1": {
+        "main": [
+          [
+            {
+              "node": "Send message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Owner ",
+    "name": null,
+    "description": null
+  },
+  "activeVersionId": "5cd1639d-2eb9-48da-b171-2aefbfdac6ee",
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Voice": {
+      "main": [
+        [
+          {
+            "node": "Download media1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Buffer": {
+      "main": [
+        [
+          {
+            "node": "Parse Messages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download media1": {
+      "main": [
+        [
+          {
+            "node": "Download Img",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Img": {
+      "main": [
+        [
+          {
+            "node": "Combine All",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Messages": {
+      "main": [
+        [
+          {
+            "node": "Download media2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download media2": {
+      "main": [
+        [
+          {
+            "node": "Download Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET_BOOKINGS2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK FREE SLOTS1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATE_BOOKING2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESCHEDULE_BOOKING2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CANCEL_BOOKING2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine All": {
+      "main": [
+        [
+          {
+            "node": "AGENTE SARA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGENTE SARA1": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2025-12-23T12:23:52.585Z",
+  "id": "pVrZi548rROsYiKD",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Sara WhatsApp - Scalable Buffer",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        -432
+      ],
+      "id": "4ba4e9c5-a961-4174-ad23-13fd86c498bd",
+      "name": "WhatsApp Trigger",
+      "webhookId": "whatsapp-sara-webhook",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "wvIXLzMDMgSYUFn6",
+          "name": "WhatsApp OAuth - N8N app"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3376,
+        -464
+      ],
+      "id": "bb8fd282-3e8a-42d1-ac34-b6bfe999a4ba",
+      "name": "Transcribe Voice",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conversationKey": "={{ $json.contacts[0].wa_id }}",
+        "messageField": "={{ $json.messages?.[0]?.text?.body ? 'text:' + $json.messages[0].text.body : $json.messages?.[0]?.audio?.id ? 'audio:' + $json.messages[0].audio.id : $json.messages?.[0]?.image?.id ? 'image:' + $json.messages[0].image.id : '' }}",
+        "outputFieldName": "AllMessagesTogether",
+        "waitTime": 15
+      },
+      "type": "n8n-nodes-message-buffer.messageBuffer",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        -448
+      ],
+      "id": "4ca085ae-e3be-471e-b469-70c5f2aa879a",
+      "name": "Message Buffer",
+      "credentials": {
+        "redis": {
+          "id": "tPDqWS12P6dqeuXU",
+          "name": "REDIS DATABASE - sara-whatsapp-buffer - upstash - ilyassennajielghabi@gmail.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2608,
+        -288
+      ],
+      "id": "9d0cff19-cae1-44a7-be02-72b85724f8e4",
+      "name": "Wait",
+      "webhookId": "49ce9031-b81a-4fe2-bd79-3d846aa0d2d4"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "id": "042db887-2ecd-4311-9d96-841496f46e42",
+      "name": "Download Img",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3872,
+        -464
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "id": "a145087e-1d26-4383-8bac-1606d32f53de",
+      "name": "Download Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3168,
+        -464
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('Parse Messages').item.json.imageIds[0] }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3632,
+        -464
+      ],
+      "id": "a57e53c3-d761-4abf-82b6-0d95ea6313b0",
+      "name": "Download media1",
+      "webhookId": "890aad3b-400c-44e2-9eb3-8ea020a1ba86",
+      "alwaysOutputData": true,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const parsed = $('Code in JavaScript').first().json;\n\nlet transcription = '';\ntry {\n  transcription = $('Transcribe Voice').first()?.json?.text || '';\n} catch (e) {}\n\nlet parts = [];\nif (parsed.textContent) parts.push(parsed.textContent);\nif (transcription) parts.push(`[Audio]: ${transcription}`);\nif (parsed.hasImage) parts.push('[El usuario envió una imagen]');\n\nconst combinedInput = parts.join('\\n') || 'Hola';\n\n// Pass through any binary that came into this node\nconst inputBinary = $input.first().binary || {};\n\nreturn [{\n  json: {\n    waId: parsed.waId,\n    combinedInput: combinedInput,\n    hasImage: parsed.hasImage\n  },\n  binary: inputBinary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4080,
+        -464
+      ],
+      "id": "b5933986-eb50-4f86-aa48-9a77de508d69",
+      "name": "Combine All"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allMessages = $json.allMessages || [];\nconst waId = $json.wa_id;\n\nconst texts = [];\nconst audioIds = [];\nconst imageIds = [];\n\nallMessages.forEach(msg => {\n  if (msg.startsWith('text:')) {\n    texts.push(msg.replace('text:', ''));\n  } else if (msg.startsWith('audio:')) {\n    audioIds.push(msg.replace('audio:', ''));\n  } else if (msg.startsWith('image:')) {\n    imageIds.push(msg.replace('image:', ''));\n  }\n});\n\nreturn [{\n  json: {\n    waId: waId,\n    texts: texts,\n    audioIds: audioIds,\n    imageIds: imageIds,\n    audioId: audioIds[0] || null,  // First audio\n    imageId: imageIds[0] || null,  // First image\n    hasAudio: audioIds.length > 0,\n    hasImage: imageIds.length > 0,\n    textContent: texts.join('\\n')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2752,
+        -464
+      ],
+      "id": "c491f414-bfc3-491a-a18e-6d1e887b046b",
+      "name": "Parse Messages"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.audioIds[0] }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2960,
+        -464
+      ],
+      "id": "69d90ea9-7129-4a31-b2ea-15c9ba8fa48f",
+      "name": "Download media2",
+      "webhookId": "890aad3b-400c-44e2-9eb3-8ea020a1ba86",
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        3536,
+        96
+      ],
+      "id": "3ba3b86d-6dd9-4e0b-bed5-d555429e1ecf",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "AizjuaSCBXV5HAMG",
+          "name": "OPENAI - marketing"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedInput }}",
+        "options": {
+          "systemMessage": "=👤 **Sara — Asistente Clínica Dr. Ilyass**\n\n---\n\n## 🌍 MULTI-IDIOMA\n\n**Detecta el idioma del usuario y responde en ese idioma:**\n- Español → responde en español\n- English → respond in English\n- العربية → أجب بالعربية\n\n---\n\n## 👤 Identidad\n\nSara, 25 años, recepcionista real (nunca IA). Profesional, cercana y empática.\n\n**Comunicación:**\n- Tono natural: \"¡Genial!\", \"Vale\", \"Perfecto\"\n- Una pregunta por mensaje (máx 3 frases)\n- Fechas con mes: \"martes 15 de octubre a las 10:00\"\n- Nunca menciones zonas horarias ni UTC\n\n---\n\n## 🏥 Clínica\n\n- **Dirección:** Carrer Pere Andreu, 18, Valencia\n- **Horario:** Lunes a viernes 9:00–17:00\n- **Teléfono:** +34 631 975 901\n- **Cancelación:** gratis >48h, 10€ si <48h\n\n**Servicios:**\n- Limpieza Dental — 45 min\n- Estética Dental — 75 min\n- Eliminación de Caries — 50 min\n- Consulta General — 30 min\n\n**HORA ACTUAL:** {{$now.setZone('Europe/Madrid').toFormat('EEEE d MMMM yyyy HH:mm', { locale: 'es' })}}\n\n---\n\n## 📋 Datos del paciente\n\n- Para CREAR cita → pide nombre, email y teléfono\n- Para BUSCAR/CANCELAR/REPROGRAMAR → solo email\n- Si dan 9 dígitos → añade +34 automáticamente\n\n---\n\n## 📸 IMÁGENES\n\nSi el usuario envía imagen de boca/dientes:\n- Describe lo que ves (sin diagnosticar)\n- Sugiere servicio apropiado\n- Ofrece reservar cita\n\n---\n\n## 🔧 Herramientas\n\n- **CHECK FREE SLOTS** → busca disponibilidad\n- **CREATE_BOOKING** → crea cita (verifica doble reserva)\n- **GET_BOOKINGS** → busca citas por email\n- **RESCHEDULE_BOOKING** → reprograma\n- **CANCEL_BOOKING** → cancela\n\n---\n\n## ⚠️ Reglas\n\n- SIEMPRE llama GET_BOOKINGS antes de RESCHEDULE o CANCEL\n- Confirma resumen antes de acciones definitivas\n- Nunca muestres datos técnicos (UIDs, UTC)\n- Si hay error → sugiere alternativas",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3728,
+        -128
+      ],
+      "id": "6b5ac1bc-7207-4e35-958b-5cfb03db71b3",
+      "name": "AGENTE SARA1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3728,
+        96
+      ],
+      "id": "c369bd77-1d23-4b53-9042-a6b05db1398e",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "description": "Busca las citas de un paciente por email.",
+        "jsCode": "let email;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n} else if (typeof query === 'string') {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n  } catch (e) {\n    email = query.trim();\n  }\n}\n\nif (!email || !email.includes('@')) {\n  return JSON.stringify({\n    success: false,\n    error: 'Email inválido.'\n  });\n}\n\nconst url = `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`;\n\nlet data;\ntry {\n  data = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: {\n      'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92',\n      'cal-api-version': '2024-08-13'\n    },\n    json: true\n  });\n} catch (error) {\n  return JSON.stringify({ success: false, error: error.message });\n}\n\nconst bookings = data.data || [];\nconst activeBookings = bookings.filter(b => b.status === 'accepted');\n\nif (activeBookings.length === 0) {\n  return JSON.stringify({ success: true, found: false, message: 'No hay citas activas.', bookings: [] });\n}\n\nconst formattedBookings = activeBookings.map((booking, index) => {\n  const startDate = new Date(booking.start);\n  const formattedDate = startDate.toLocaleString('es-ES', {\n    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'\n  });\n  const serviceName = booking.bookingFieldsResponses?.service || booking.title || 'Cita';\n  return `${index + 1}. ${serviceName} - ${formattedDate}`;\n});\n\nreturn JSON.stringify({\n  success: true,\n  found: true,\n  count: formattedBookings.length,\n  message: `Encontré ${formattedBookings.length} cita(s):`,\n  bookings: formattedBookings\n});",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        3904,
+        96
+      ],
+      "id": "00a2cd74-96fa-460e-8fff-865ba6a58b5d",
+      "name": "GET_BOOKINGS2"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Check available slots for a date and service",
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"eventTypeId\": \"3502752\",\n  \"start\": \"{{$fromAI('startDate', 'YYYY-MM-DD')}}\",\n  \"end\": \"{{$fromAI('endDate', 'YYYY-MM-DD, día siguiente al start')}}\",\n  \"duration\": \"{{$fromAI('duration', '30, 45, 50 o 75')}}\",\n  \"timeZone\": \"Europe/Madrid\",\n  \"format\": \"range\"\n}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Authorization\": \"Bearer cal_live_01266add88dbb76e38fe6637e3130a92\",\n  \"cal-api-version\": \"2024-09-04\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        4080,
+        96
+      ],
+      "id": "109d5982-af61-4c27-8076-59220c3e2aff",
+      "name": "CHECK FREE SLOTS1"
+    },
+    {
+      "parameters": {
+        "description": "Crea una cita nueva. Verifica doble reserva automáticamente.",
+        "jsCode": "let email, fullName, phone, service, startUtc, duration;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  fullName = query.fullName;\n  phone = query.phone;\n  service = query.service;\n  startUtc = query.startUtc;\n  duration = query.duration;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    fullName = input.fullName;\n    phone = input.phone;\n    service = input.service;\n    startUtc = input.startUtc;\n    duration = input.duration;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !fullName || !phone || !service || !startUtc || !duration) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\n// Check for double booking\nconst requestedDate = startUtc.split('T')[0];\nlet existing;\ntry {\n  existing = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  existing = { data: [] };\n}\n\nconst active = (existing.data || []).filter(b => b.status === 'accepted');\nconst sameDay = active.find(b => b.start.split('T')[0] === requestedDate);\n\nif (sameDay) {\n  const t = new Date(sameDay.start).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });\n  return JSON.stringify({ success: false, doubleBooking: true, message: `Ya tiene cita a las ${t} ese día.` });\n}\n\n// Create booking\ntry {\n  const resp = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.cal.com/v2/bookings',\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: {\n      eventTypeId: 3502752,\n      start: startUtc,\n      attendee: { name: fullName, email: email, timeZone: 'Europe/Madrid', phoneNumber: phone },\n      lengthInMinutes: parseInt(duration),\n      bookingFieldsResponses: { service: service }\n    },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita creada correctamente.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Horario no disponible.' });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"email\": \"maria@gmail.com\",\n  \"fullName\": \"Maria Garcia\",\n  \"phone\": \"+34631975901\",\n  \"service\": \"Limpieza Dental\",\n  \"startUtc\": \"2025-12-17T09:00:00Z\",\n  \"duration\": 45\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        4256,
+        96
+      ],
+      "id": "63ed51b8-221c-43b9-a511-6d4fd0fdee0a",
+      "name": "CREATE_BOOKING2"
+    },
+    {
+      "parameters": {
+        "description": "Reprograma una cita existente.",
+        "jsCode": "let email, bookingNumber, newStartUtc;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  newStartUtc = query.newStartUtc;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    newStartUtc = input.newStartUtc;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !bookingNumber || !newStartUtc) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\n\n// Get bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al buscar.' });\n}\n\nconst active = (listData.data || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return JSON.stringify({ success: false, error: 'No hay citas activas.' });\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return JSON.stringify({ success: false, error: `No existe cita ${bookingNumber}.` });\n}\n\nconst uid = active[idx].uid;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/reschedule`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { start: newStartUtc, rescheduledBy: 'ilyassennajielghabi@gmail.com', reschedulingReason: '' },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita reprogramada.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al reprogramar.' });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\", \"bookingNumber\": 1, \"newStartUtc\": \"2025-12-18T10:00:00Z\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        4448,
+        96
+      ],
+      "id": "344f7e62-14c0-48f3-afe8-3d7f25d03d7a",
+      "name": "RESCHEDULE_BOOKING2"
+    },
+    {
+      "parameters": {
+        "description": "Cancela una cita existente.",
+        "jsCode": "let email, bookingNumber, reason;\n\nif (typeof query === 'object' && query !== null) {\n  email = query.email;\n  bookingNumber = query.bookingNumber;\n  reason = query.reason;\n} else {\n  try {\n    const input = JSON.parse(query);\n    email = input.email;\n    bookingNumber = input.bookingNumber;\n    reason = input.reason;\n  } catch (e) {\n    return JSON.stringify({ success: false, error: 'Formato inválido.' });\n  }\n}\n\nif (!email || !bookingNumber) {\n  return JSON.stringify({ success: false, error: 'Faltan datos.' });\n}\n\nif (typeof bookingNumber === 'string') bookingNumber = parseInt(bookingNumber);\nif (!reason) reason = 'Cancelado por paciente';\n\n// Get bookings\nlet listData;\ntry {\n  listData = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.cal.com/v2/bookings?eventTypeId=3502752&attendeeEmail=${encodeURIComponent(email)}&take=100`,\n    headers: { 'Authorization': 'Bearer cal_live_01266add88dbb76e38fe6637e3130a92', 'cal-api-version': '2024-08-13' },\n    json: true\n  });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al buscar.' });\n}\n\nconst active = (listData.data || []).filter(b => b.status === 'accepted');\nif (active.length === 0) return JSON.stringify({ success: false, error: 'No hay citas activas.' });\n\nconst idx = bookingNumber - 1;\nif (idx < 0 || idx >= active.length) {\n  return JSON.stringify({ success: false, error: `No existe cita ${bookingNumber}.` });\n}\n\nconst uid = active[idx].uid;\n\ntry {\n  await this.helpers.httpRequest({\n    method: 'POST',\n    url: `https://api.cal.com/v2/bookings/${uid}/cancel`,\n    headers: { 'Authorization': 'Bearer cal_live_f88ed09076e112ddf77a72a360e79a88', 'cal-api-version': '2024-08-13', 'Content-Type': 'application/json' },\n    body: { cancellationReason: reason },\n    json: true\n  });\n  return JSON.stringify({ success: true, message: 'Cita cancelada.' });\n} catch (e) {\n  return JSON.stringify({ success: false, error: 'Error al cancelar.' });\n}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{ \"email\": \"maria@gmail.com\", \"bookingNumber\": 1, \"reason\": \"No puedo asistir\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        4624,
+        96
+      ],
+      "id": "12450720-89c8-4dfc-9dd3-fce5c66b45ae",
+      "name": "CANCEL_BOOKING2"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "843946438811717",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{$json.output}}",
+        "additionalFields": {
+          "previewUrl": false
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        4192,
+        -128
+      ],
+      "id": "9447f8e7-e3aa-4554-ac2f-4e5602994481",
+      "name": "Send message",
+      "webhookId": "2b2a6e4c-a275-466e-b203-efdaca7050c2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "5KmzbDiUDcN6NpE6",
+          "name": "WhatsApp API - N8N app"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "WhatsApp Trigger": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551713926",
+            "phone_number_id": "843946438811717"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "Ilyass"
+              },
+              "wa_id": "34631975901"
+            }
+          ],
+          "messages": [
+            {
+              "from": "34631975901",
+              "id": "wamid.HBgLMzQ2MzE5NzU5MDEVAgASGBQzQTExOTQ5MjUzMDgwMzI3N0MxNgA=",
+              "timestamp": "1766501673",
+              "type": "audio",
+              "audio": {
+                "mime_type": "audio/ogg; codecs=opus",
+                "sha256": "5Qd/K59UZIsTzZpe0rpmIMHCN26rbvcTO4kVCRRGlPk=",
+                "id": "1193396019077574",
+                "url": "https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=1193396019077574&source=webhook&ext=1766501974&hash=ARmHaBibqqAvqcqp4npXc_y_cFOjnPpGBkjzKXy1HrxD2Q",
+                "voice": true
+              }
+            }
+          ],
+          "field": "messages"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "updatedAt": "2025-12-23T12:23:52.593Z",
+      "createdAt": "2025-12-23T12:23:52.593Z",
+      "role": "workflow:owner",
+      "workflowId": "pVrZi548rROsYiKD",
+      "projectId": "8dA9Em61CLw7Lgze"
+    }
+  ],
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-23T14:57:29.730Z",
+  "versionId": "5cd1639d-2eb9-48da-b171-2aefbfdac6ee"
+}
